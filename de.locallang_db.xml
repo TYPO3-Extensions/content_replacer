@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<T3locallangExt>
+	<data type="array">
+		<languageKey index="de" type="array">
+			<label index="tx_content_replacer_term">Ausdruck (Suchen/Ersetzen)</label>
+			<label index="tx_content_replacer_term.description">Beschreibung</label>
+			<label index="tx_content_replacer_term.term">Ausdruck</label>
+			<label index="tx_content_replacer_term.category_uid">Kategorie</label>
+			<label index="tx_content_replacer_term.replacement">Ersatz</label>
+			<label index="tx_content_replacer_term.stdWrap">stdWrap-Konfiguration (muss im Namespace der Extension liegen!)</label>
+			<label index="tx_content_replacer_category">Kategorie (Suchen/Ersetzen)</label>
+			<label index="tx_content_replacer_category.category">Kategorie</label>
+			<label index="tx_content_replacer_category.description">Beschreibung</label>
+		</languageKey>
+	</data>
+</T3locallangExt>

@@ -1,0 +1,2 @@
+# cat=basic/enable; type=boolean; label=Always Call the Find/Replace method: Enable this setting to call the find/replace method each time the content is processed. You will need to set that option to replace occurences on pages which have set the no cache parameter in the page properties.
+useAllHook = 0

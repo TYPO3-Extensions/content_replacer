@@ -1,0 +1,7 @@
+plugin.tx_content_replacer {
+	disabled = {$plugin.tx_content_replacer.disabled}
+
+	prefix = {$plugin.tx_content_replacer.prefix}
+
+	amountOfPasses = {$plugin.tx_content_replacer.amountOfPasses}
+}
