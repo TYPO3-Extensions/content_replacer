@@ -62,10 +62,8 @@ class tx_content_replacer {
 			}
 		}
 
-		// get the parseFunc_RTE configuration and add the removeWrapping property to remove
-		// the surrounding p tags
+		// get the parseFunc_RTE configuration
 		$this->parseFunc = $GLOBALS['TSFE']->tmpl->setup['lib.']['parseFunc_RTE.'];
-		$this->parseFunc['nonTypoTagStdWrap.']['encapsLines.']['removeWrapping'] = true;
 	}
 
 	/**
@@ -225,6 +223,7 @@ class tx_content_replacer {
 	function prepareTermReplacement($replacement, $stdWrap) {
 		// rte transformation of the replacement string
 		$replacement = $GLOBALS['TSFE']->cObj->parseFunc($replacement, $this->parseFunc);
+		$replacement = preg_replace('/^<p>(.+)<\/p>$/s', '\1', $replacement);
 
 		// stdWrap execution if available
 		if ($stdWrap !== '') {
