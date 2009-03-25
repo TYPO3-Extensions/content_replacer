@@ -191,18 +191,30 @@ class tx_content_replacer {
 			'' // LIMIT
 		);
 
+		// calculate language mode
+		$overlayMode = '';
+		if ($this->extConfig['sysLanguageMode'] !== 'normal') {
+			$languageMode = $GLOBALS['TSFE']->sys_language_uid;
+			if ($this->extConfig['sysLanguageMode'] === 'strict') {	
+				$overlayMode = 'hideNonTranslated';
+			}
+		} else {
+			$languageMode = $GLOBALS['TSFE']->sys_language_content;
+		}
+
 		// record overlay (enables multilanguage support)
 		$terms = array();
 		while ($term = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
-			if ($GLOBALS['TSFE']->sys_language_content > 0) {
+			if ($languageMode > 0) {
 				$term = $GLOBALS['TSFE']->sys_page->getRecordOverlay(
 					'tx_content_replacer_term',
 					$term,
-					$GLOBALS['TSFE']->sys_language_content
+					$languageMode,
+					$overlayMode
 				);
 			}
 
-			if (is_array($term)) {
+			if (is_array($term) || $this->extConfig['sysLanguageMode'] === 'strict') {
 				$terms[] = $term;
 			}
 		}

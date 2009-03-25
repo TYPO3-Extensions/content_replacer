@@ -1,2 +1,5 @@
+# cat=basic/; type=options[normal=normal, strictWithFallback=strictWithFallback, strict=strict]; label=Language Fallback Modus: The normal option causes the extension to use your global TYPO3 language settings. You can select strict to ignore them totally and to require a translation. The strictWithFallback option isn't such conservative and fallbacks to the default one if no translation is available.
+sysLanguageMode = normal
+
 # cat=basic/enable; type=boolean; label=Always Call the Find/Replace method: Enable this setting to call the find/replace method each time the content is processed. You will need to set that option to replace occurences on pages which have set the no cache parameter in the page properties.
 useAllHook = 0
