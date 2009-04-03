@@ -90,28 +90,44 @@ class tx_content_replacer {
 			}
 
 			// loop categories
-			foreach ($categories as $category => $terms) {
+			foreach ($categories as $category => $filterTerms) {
 				// fetch term informations (the wildcard term "*" is added manually to the array)
-				$terms[] = '*';
-				$terms = $this->fetchTerms($terms, $category);
+				$filterTerms[] = '*';
+				$terms = $this->fetchTerms($filterTerms, $category);
 				if (!count($terms)) {
 					continue;
 				}
 
+				// merge entries which are on the page with the database informations
+				$terms = array_merge(array_flip($filterTerms), $terms);
+
+				// get default replacement if available
+				if (is_array($terms['*'])) {
+					$defaultReplacement = $terms['*'];
+				}
+				unset($terms['*']);
+
 				// loop terms
 				$search = $replace = array();
-				foreach($terms as $index => $term) {
-					// use an high index for the wildcard term to be applied at the end of
-					// the replacing process
-					$index = ($term['term'] == '*' ? 999 : $index);
+				foreach($terms as $termName => $term) {
+					// use default replacement if the term wasn't defined in the database
+					if (!is_array($term)) {
+						$term = $defaultReplacement;
+						$term['term'] = $termName;
+					}
 
+					// add the term name as replacement if it's empty
+					if ($term['replacement'] == '') {
+						$term['replacement'] = $termName;
+					}
+					
 					// built search string (respects the wildcard * for any term)
-					$search[$index] =
+					$search[$termName] =
 						'/\<span class="' . $this->extConfig['prefix'] . $category . '"\>\s*?' .
 						($term['term'] == '*' ? '.*?' : $term['term']) . '\s*?\<\/span\>/i';
 
 					// prepare replacement string
-					$replace[$index] = $this->prepareTermReplacement(
+					$replace[$termName] = $this->prepareTermReplacement(
 						$term['replacement'],
 						$term['stdWrap']
 					);
@@ -159,11 +175,11 @@ class tx_content_replacer {
 	/**
 	 * This function returns the given term names with their related informations.
 	 *
-	 * @param $terms array list of term names
+	 * @param $filterTerms array list of term names
 	 * @param $category string category name
 	 * @return array terms with their related informations
 	 */
-	function fetchTerms($terms, $category) {
+	function fetchTerms($filterTerms, $category) {
 		// escape strings
 		$category = $GLOBALS['TYPO3_DB']->fullQuoteStr(
 			$category,
@@ -171,8 +187,11 @@ class tx_content_replacer {
 		);
 
 		$termsWhereClause = array();
-		foreach ($terms as $term) {
-			$termsWhereClause[] = $GLOBALS['TYPO3_DB']->fullQuoteStr(trim($term), 'tx_content_replacer_term');
+		foreach ($filterTerms as $term) {
+			$termsWhereClause[] = $GLOBALS['TYPO3_DB']->fullQuoteStr(
+				trim($term),
+				'tx_content_replacer_term'
+			);
 		}
 
 		// get replace terms
@@ -215,7 +234,7 @@ class tx_content_replacer {
 			}
 
 			if (is_array($term) || $this->extConfig['sysLanguageMode'] === 'strict') {
-				$terms[] = $term;
+				$terms[$term['term']] = $term;
 			}
 		}
 
