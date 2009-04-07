@@ -90,8 +90,9 @@ class tx_content_replacer {
 			}
 
 			// loop categories
-			foreach ($categories as $category => $filterTerms) {
+			foreach ($categories as $category => $foundTerms) {
 				// fetch term informations (the wildcard term "*" is added manually to the array)
+				$filterTerms = array_keys($foundTerms);
 				$filterTerms[] = '*';
 				$terms = $this->fetchTerms($filterTerms, $category);
 				if (!count($terms)) {
@@ -120,25 +121,42 @@ class tx_content_replacer {
 					if ($term['replacement'] == '') {
 						$term['replacement'] = $termName;
 					}
-					
+
 					// built search string (respects the wildcard * for any term)
-					$search[$termName] =
-						'/\<span class="' . $this->extConfig['prefix'] . $category . '"\>\s*?' .
-						($term['term'] == '*' ? '.*?' : $term['term']) . '\s*?\<\/span\>/i';
+					$searchTerm = ($term['term'] == '*' ? '.*?' : $term['term']);
+					$searchClass = $this->extConfig['prefix'] . $category;
+					$search[$termName] = '/' .
+						'<span '. $foundTerms[$termName]['pre'] .
+						'class="' . $searchClass . '"' .
+						$foundTerms[$termName]['post'] . '>\s*?' .
+						$searchTerm . '\s*?' .
+						'<\/span>'.
+					'/i';
 
 					// prepare replacement string
 					$replace[$termName] = $this->prepareTermReplacement(
 						$term['replacement'],
 						$term['stdWrap']
 					);
+
+					// pre or post assignments in the origin span tag?
+					if ($foundTerms[$termName]['pre'] !== '' ||
+						$foundTerms[$termName]['post'] !== ''
+					) {
+						$attributes = trim(
+							$foundTerms[$termName]['pre'] . ' ' . $foundTerms[$termName]['post']
+						);
+						$replace[$termName] = '<span ' . $attributes . '>' .
+							$replace[$termName] . '</span>';
+					}
 				}
 
-				// the arrays needs to be reordered by the array keys for the wildcard term
-				ksort($search);
-				ksort($replace);
-
 				// finally replace the occurences for the category
-				$GLOBALS['TSFE']->content = preg_replace($search, $replace, $GLOBALS['TSFE']->content);
+				$GLOBALS['TSFE']->content = preg_replace(
+					$search,
+					$replace,
+					$GLOBALS['TSFE']->content
+				);
 			}
 		}
 
@@ -160,13 +178,14 @@ class tx_content_replacer {
 	function parseContent() {
 		// parse span tags
 		$matches = array();
-		$pattern = '/\<span class="' . $this->extConfig['prefix'] . '(.+?)"\>(.*?)\<\/span\>/i';
+		$pattern = '/\<span (.*?)class="' . $this->extConfig['prefix'] . '(.+?)"(.*?)\>(.*?)\<\/span\>/i';
 		preg_match_all($pattern, $GLOBALS['TSFE']->content, $matches);
 
 		// order found terms by category
 		$categories = array();
-		foreach ($matches[2] as $index => $term) {
-			$categories[$matches[1][$index]][] = $term;
+		foreach ($matches[4] as $index => $term) {
+			$categories[$matches[2][$index]][$term]['pre'] = $matches[1][$index];
+			$categories[$matches[2][$index]][$term]['post'] = $matches[3][$index];
 		}
 
 		return $categories;
