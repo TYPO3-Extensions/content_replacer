@@ -123,13 +123,21 @@ class tx_content_replacer {
 					}
 
 					// built search string (respects the wildcard * for any term)
-					$searchTerm = ($term['term'] == '*' ? '.*?' : $term['term']);
-					$searchClass = $this->extConfig['prefix'] . $category;
+					$searchTerm = preg_quote(
+						($term['term'] == '*' ? '.*?' : $term['term']),
+						'/'
+					);
+
+					$searchClass = preg_quote(
+						$this->extConfig['prefix'] . $category,
+						'/'
+					);
+
 					$search[$termName] = '/' .
-						'<span '. $foundTerms[$termName]['pre'] .
+						'<span '. preg_quote($foundTerms[$termName]['pre'], '/') .
 						'class="' . $searchClass . '"' .
-						$foundTerms[$termName]['post'] . '>\s*?' .
-						$searchTerm . '\s*?' .
+						preg_quote($foundTerms[$termName]['post'], '/') . '>' .
+						$searchTerm . 
 						'<\/span>'.
 					'/i';
 
@@ -140,12 +148,14 @@ class tx_content_replacer {
 					);
 
 					// pre or post assignments in the origin span tag?
-					if ($foundTerms[$termName]['pre'] !== '' ||
-						$foundTerms[$termName]['post'] !== ''
+					if (trim($foundTerms[$termName]['pre']) !== '' ||
+						trim($foundTerms[$termName]['post']) !== ''
 					) {
 						$attributes = trim(
-							$foundTerms[$termName]['pre'] . ' ' . $foundTerms[$termName]['post']
+							$foundTerms[$termName]['pre'] . ' ' .
+							$foundTerms[$termName]['post']
 						);
+
 						$replace[$termName] = '<span ' . $attributes . '>' .
 							$replace[$termName] . '</span>';
 					}
@@ -178,14 +188,25 @@ class tx_content_replacer {
 	function parseContent() {
 		// parse span tags
 		$matches = array();
-		$pattern = '/\<span (.*?)class="' . $this->extConfig['prefix'] . '(.+?)"(.*?)\>(.*?)\<\/span\>/i';
+		$prefix = preg_quote($this->extConfig['prefix'], '/');
+		$pattern =
+			'/<span' . // filter in any span tag
+			'(?=.+?' . // anything inside the node
+				// with a class which starts with the defined prefix
+				'(?=.*?(?:(class="' . $prefix . '(.+?)")|>))' .
+			')' .
+			' (.*?)\1(.*?)>' . // and stop if the closing tag of the beginning node is reached
+			'(.+?)(?:<\/span>)' . // and get the any html until the ending span tag is reached
+			'/is';
+
 		preg_match_all($pattern, $GLOBALS['TSFE']->content, $matches);
 
 		// order found terms by category
 		$categories = array();
-		foreach ($matches[4] as $index => $term) {
-			$categories[$matches[2][$index]][$term]['pre'] = $matches[1][$index];
-			$categories[$matches[2][$index]][$term]['post'] = $matches[3][$index];
+		foreach ($matches[5] as $index => $term) {
+			$term = trim($term);
+			$categories[$matches[2][$index]][$term]['pre'] = $matches[3][$index];
+			$categories[$matches[2][$index]][$term]['post'] = $matches[4][$index];
 		}
 
 		return $categories;
