@@ -137,7 +137,7 @@ class tx_content_replacer {
 						'<span '. preg_quote($foundTerms[$termName]['pre'], '/') .
 						'class="' . $searchClass . '"' .
 						preg_quote($foundTerms[$termName]['post'], '/') . '>' .
-						$searchTerm . 
+						'\s*?' . $searchTerm . '\s*?' .
 						'<\/span>'.
 					'/i';
 
@@ -191,14 +191,14 @@ class tx_content_replacer {
 		$prefix = preg_quote($this->extConfig['prefix'], '/');
 		$pattern =
 			'/<span' . // filter in any span tag
-			'(?=.+?' . // anything inside the node
-				// with a class which starts with the defined prefix
-				'(?=.*?(?:(class="' . $prefix . '(.+?)")|>))' .
-			')' .
+				'(?=[^>]+' . // any attributes of the beginning start tag
+					// only spans with a class which starts with the defined prefix
+					// forward declaration is used to be indepent of the attribute order
+					'(?=(class="' . $prefix . '(.+?)"))' .
+				')' .
 			' (.*?)\1(.*?)>' . // and stop if the closing tag of the beginning node is reached
-			'(.+?)(?:<\/span>)' . // and get the any html until the ending span tag is reached
-			'/is';
-
+			'(.*?)<\/span>' . // and get anything inside the node until the ending span tag
+			'/is'; // case insenstitive and parse it like a single one liner
 		preg_match_all($pattern, $GLOBALS['TSFE']->content, $matches);
 
 		// order found terms by category
