@@ -132,7 +132,7 @@ $TCA['tx_content_replacer_term'] = array (
 			'showitem' => 'sys_language_uid;;;;1-1-1, l10n_parent, l10n_diffsource, hidden;;1, term,
 				category_uid, stdWrap,
 				replacement;;;richtext[*]:rte_transform[mode=ts_css|imgpath=uploads/tx_content_parser/rte/],
-				description'
+				description, --div--'
 		)
 	),
 	'palettes' => array (
@@ -186,7 +186,7 @@ $TCA['tx_content_replacer_category'] = array (
 	),
 	'types' => array (
 		0 => array (
-			'showitem' => 'hidden;;1, category, description'
+			'showitem' => 'hidden;;1, category, description, --div--'
 		)
 	),
 	'palettes' => array (

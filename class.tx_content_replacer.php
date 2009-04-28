@@ -259,21 +259,28 @@ class tx_content_replacer {
 			}
 		} else {
 			$languageMode = $GLOBALS['TSFE']->sys_language_content;
+			$overlayMode = $GLOBALS['TSFE']->sys_language_contentOL;
 		}
 
 		// record overlay (enables multilanguage support)
 		$terms = array();
 		while ($term = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
-			if ($languageMode > 0) {
-				$term = $GLOBALS['TSFE']->sys_page->getRecordOverlay(
-					'tx_content_replacer_term',
-					$term,
-					$languageMode,
-					$overlayMode
-				);
+			// overlay only needed if we don't want to fetch the default language
+			if (intval($languageMode) <= 0) {
+				$terms[$term['term']] = $term;
 			}
 
-			if (is_array($term) || $this->extConfig['sysLanguageMode'] === 'strict') {
+			// get overlay
+			$overlayTerm = $GLOBALS['TSFE']->sys_page->getRecordOverlay(
+				'tx_content_replacer_term',
+				$term,
+				$languageMode,
+				$overlayMode
+			);
+
+			if (count($overlayTerm)) {
+				$terms[$overlayTerm['term']] = $overlayTerm;
+			} elseif ($this->extConfig['sysLanguageMode'] !== 'strict') {
 				$terms[$term['term']] = $term;
 			}
 		}
@@ -307,8 +314,6 @@ class tx_content_replacer {
 		return $replacement;
 	}
 }
-
-
 
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/content_replacer/class.tx_content_replacer.php'])	{
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/content_replacer/class.tx_content_replacer.php']);
