@@ -36,10 +36,10 @@
  */
 class tx_content_replacer {
 	/** @var $extConfig array holds the extension configuration */
-	var $extConfig = array();
+	private $extConfig = array();
 
 	/** @var $parseFunc array holds the lib.parseFunc_RTE configuration */
-	var $parseFunc = array();
+	private $parseFunc = array();
 
 	/**
 	 * Constructor
@@ -48,7 +48,7 @@ class tx_content_replacer {
 	 *
 	 * @return void
 	 */
-	function __construct() {
+	public function __construct() {
 		// global extension configuration
 		$this->extConfig = unserialize(
 			$GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['content_replacer']
@@ -67,16 +67,47 @@ class tx_content_replacer {
 	}
 
 	/**
-	 * Contains the process logic of the whole extension!
+	 * Just a wrapper for the main function! It's used for the contentPostProc-all hook.
+	 * 
+	 * @return bool
+	 */
+	public function contentPostProcAll() {
+		// do nothing if the all hook is disabled by the user or
+		// the content should be cached!
+		if ($GLOBALS['TSFE']->config['config']['no_cache'] != 1 &&
+			!$this->extConfig['useAllHook']
+		) {
+			return true;
+		}
+
+		// do nothing if the disable flag is set
+		if ($this->extConfig['disable']) {
+			return true;
+		}
+		
+		return $this->main();
+	}
+
+	/**
+	 * Just a wrapper for the main function!  It's used for the contentPostProc-cache hook.
 	 *
 	 * @return bool
 	 */
-	function main() {
+	public function contentPostProcCached() {
 		// do nothing if the disable flag is set
 		if ($this->extConfig['disable']) {
 			return true;
 		}
 
+		return $this->main();
+	}
+
+	/**
+	 * Contains the process logic of the whole extension!
+	 *
+	 * @return bool
+	 */
+	public function main() {
 		// the content should be parsed until all occurences are replaced
 		// this enables the replacing of occurences in the replacement texts
 		$loopCounter = 0;
@@ -185,7 +216,7 @@ class tx_content_replacer {
 	 *
 	 * @return array ordered list of found matches by the category
 	 */
-	function parseContent() {
+	protected function parseContent() {
 		// parse span tags
 		$matches = array();
 		$prefix = preg_quote($this->extConfig['prefix'], '/');
@@ -219,7 +250,7 @@ class tx_content_replacer {
 	 * @param $category string category name
 	 * @return array terms with their related informations
 	 */
-	function fetchTerms($filterTerms, $category) {
+	protected function fetchTerms($filterTerms, $category) {
 		// escape strings
 		$category = $GLOBALS['TYPO3_DB']->fullQuoteStr(
 			$category,
@@ -244,10 +275,7 @@ class tx_content_replacer {
 				'sys_language_uid IN (-1, 0) AND category = ' . $category . ' AND ' .
 				'tx_content_replacer_category.uid = category_uid ' .
 				$GLOBALS['TSFE']->cObj->enableFields('tx_content_replacer_term') . ' ' .
-				$GLOBALS['TSFE']->cObj->enableFields('tx_content_replacer_category'),
-			'', // GROUP BY
-			'', // ORDER BY
-			'' // LIMIT
+				$GLOBALS['TSFE']->cObj->enableFields('tx_content_replacer_category')
 		);
 
 		// calculate language mode
@@ -298,7 +326,7 @@ class tx_content_replacer {
 	 * @param $stdWrap stdWrap configuration class (see description for more informations)
 	 * @return string prepared text
 	 */
-	function prepareTermReplacement($replacement, $stdWrap) {
+	protected function prepareTermReplacement($replacement, $stdWrap) {
 		// rte transformation of the replacement string
 		$replacement = $GLOBALS['TSFE']->cObj->parseFunc($replacement, $this->parseFunc);
 		$replacement = preg_replace('/^<p>(.+)<\/p>$/s', '\1', $replacement);
