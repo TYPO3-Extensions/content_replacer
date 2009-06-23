@@ -75,6 +75,7 @@ class tx_content_replacer {
 		// do nothing if the all hook is disabled by the user or
 		// the content should be cached!
 		if ($GLOBALS['TSFE']->config['config']['no_cache'] != 1 &&
+			t3lib_div::_GP('no_cache') != 1 &&
 			!$this->extConfig['useAllHook']
 		) {
 			return true;
@@ -134,6 +135,7 @@ class tx_content_replacer {
 				$terms = array_merge(array_flip($filterTerms), $terms);
 
 				// get default replacement if available
+				$defaultReplacement = '';
 				if (is_array($terms['*'])) {
 					$defaultReplacement = $terms['*'];
 				}
@@ -280,6 +282,7 @@ class tx_content_replacer {
 
 		// calculate language mode
 		$overlayMode = '';
+		$languageMode = '';
 		if ($this->extConfig['sysLanguageMode'] !== 'normal') {
 			$languageMode = $GLOBALS['TSFE']->sys_language_uid;
 			if ($this->extConfig['sysLanguageMode'] === 'strict') {	
