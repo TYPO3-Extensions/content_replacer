@@ -74,8 +74,7 @@ class tx_content_replacer {
 	public function contentPostProcAll() {
 		// do nothing if the all hook is disabled by the user or
 		// the content should be cached!
-		if ($GLOBALS['TSFE']->config['config']['no_cache'] != 1 &&
-			t3lib_div::_GP('no_cache') != 1 &&
+		if (!$GLOBALS['TSFE']->no_cache &&
 			!$this->extConfig['useAllHook']
 		) {
 			return true;
