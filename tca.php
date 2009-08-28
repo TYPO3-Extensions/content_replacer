@@ -7,7 +7,20 @@ $TCA['tx_content_replacer_term'] = array (
 	'ctrl' => $TCA['tx_content_replacer_term']['ctrl'],
 	'interface' => array (
 		'showRecordFieldList' => 'sys_language_uid, l10n_parent, l10n_diffsource, hidden,
-			term, category_uid, stdWrap, replacement, description'
+			term, category_uid, stdWrap, replacement, description, starttime, endtime'
+	),
+	'types' => array (
+		0 => array (
+			'showitem' => 'sys_language_uid;;;;1-1-1, l10n_parent, l10n_diffsource, hidden;;1, term,
+				category_uid, stdWrap,
+				replacement;;;richtext[*]:rte_transform[mode=ts_css|imgpath=uploads/tx_content_parser/rte/],
+				description, starttime, endtime, --div--'
+		)
+	),
+	'palettes' => array (
+		0 => array (
+			'showitem' => ''
+		),
 	),
 	'columns' => array (
 		't3ver_label' => array (
@@ -57,6 +70,33 @@ $TCA['tx_content_replacer_term'] = array (
 			'config' => array (
 				'type' => 'check',
 				'default' => false
+			)
+		),
+		'starttime' => array (
+			'exclude' => true,
+			'label' => 'LLL:EXT:lang/locallang_general.xml:LGL.starttime',
+			'config' => array (
+				'type' => 'input',
+				'size' => '8',
+				'max' => '20',
+				'eval' => 'date',
+				'checkbox' => '0',
+				'default' => '0'
+			)
+		),
+		'endtime' => array (
+			'exclude' => true,
+			'label' => 'LLL:EXT:lang/locallang_general.xml:LGL.endtime',
+			'config' => array (
+				'type' => 'input',
+				'size' => '8',
+				'max' => '20',
+				'eval' => 'date',
+				'checkbox' => '0',
+				'default' => '0',
+				'range' => array (
+					'upper' => mktime(0, 0, 0, 12, 31, 2020),
+				)
 			)
 		),
 		'term' => array (
@@ -126,19 +166,6 @@ $TCA['tx_content_replacer_term'] = array (
 				'rows' => 3
 			)
 		),
-	),
-	'types' => array (
-		0 => array (
-			'showitem' => 'sys_language_uid;;;;1-1-1, l10n_parent, l10n_diffsource, hidden;;1, term,
-				category_uid, stdWrap,
-				replacement;;;richtext[*]:rte_transform[mode=ts_css|imgpath=uploads/tx_content_parser/rte/],
-				description, --div--'
-		)
-	),
-	'palettes' => array (
-		1 => array (
-			'showitem' => ''
-		),
 	)
 );
 
@@ -146,6 +173,16 @@ $TCA['tx_content_replacer_category'] = array (
 	'ctrl' => $TCA['tx_content_replacer_category']['ctrl'],
 	'interface' => array (
 		'showRecordFieldList' => 'hidden, category, description'
+	),
+	'types' => array (
+		0 => array (
+			'showitem' => 'hidden;;1, category, description, --div--'
+		)
+	),
+	'palettes' => array (
+		0 => array (
+			'showitem' => ''
+		),
 	),
 	'columns' => array (
 		't3ver_label' => array (
@@ -182,16 +219,6 @@ $TCA['tx_content_replacer_category'] = array (
 				'cols' => 40,
 				'rows' => 3
 			)
-		),
-	),
-	'types' => array (
-		0 => array (
-			'showitem' => 'hidden;;1, category, description, --div--'
-		)
-	),
-	'palettes' => array (
-		1 => array (
-			'showitem' => ''
 		),
 	)
 );

@@ -26,6 +26,9 @@ CREATE TABLE tx_content_replacer_term (
 	deleted tinyint(1) NOT NULL DEFAULT '0',
     hidden tinyint(1) NOT NULL DEFAULT '0',
 
+	starttime int(10) unsigned DEFAULT '0' NOT NULL,
+	endtime int(10) unsigned DEFAULT '0' NOT NULL,
+
 	term varchar(255) NOT NULL DEFAULT '',
 	category_uid int(10) unsigned NOT NULL DEFAULT '0',
 	stdWrap varchar(255) NOT NULL DEFAULT '',

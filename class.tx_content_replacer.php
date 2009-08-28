@@ -126,9 +126,6 @@ class tx_content_replacer {
 				$filterTerms = array_keys($foundTerms);
 				$filterTerms[] = '*';
 				$terms = $this->fetchTerms($filterTerms, $category);
-				if (!count($terms)) {
-					continue;
-				}
 
 				// merge entries which are on the page with the database informations
 				$terms = array_merge(array_flip($filterTerms), $terms);
@@ -147,11 +144,6 @@ class tx_content_replacer {
 					if (!is_array($term)) {
 						$term = $defaultReplacement;
 						$term['term'] = $termName;
-					}
-
-					// add the term name as replacement if it's empty
-					if ($term['replacement'] == '') {
-						$term['replacement'] = $termName;
 					}
 
 					// built search string (respects the wildcard * for any term)
@@ -176,12 +168,13 @@ class tx_content_replacer {
 					// prepare replacement string
 					$replace[$termName] = $this->prepareTermReplacement(
 						$term['replacement'],
-						$term['stdWrap']
+						$term['stdWrap'],
+						$termName
 					);
 
 					// pre or post assignments in the origin span tag?
-					if (trim($foundTerms[$termName]['pre']) !== '' ||
-						trim($foundTerms[$termName]['post']) !== ''
+					if (trim($foundTerms[$termName]['pre']) != '' ||
+						trim($foundTerms[$termName]['post']) != ''
 					) {
 						$attributes = trim(
 							$foundTerms[$termName]['pre'] . ' ' .
@@ -326,17 +319,20 @@ class tx_content_replacer {
 	 *
 	 * @param $replacement string text
 	 * @param $stdWrap stdWrap configuration class (see description for more informations)
+	 * @param $termName original name of the term which is given to the stdWrap as an alternative for an empty replacement
 	 * @return string prepared text
 	 */
-	protected function prepareTermReplacement($replacement, $stdWrap) {
+	protected function prepareTermReplacement($replacement, $stdWrap, $termName) {
 		// rte transformation of the replacement string
-		$replacement = $GLOBALS['TSFE']->cObj->parseFunc($replacement, $this->parseFunc);
-		$replacement = preg_replace('/^<p>(.+)<\/p>$/s', '\1', $replacement);
+		if ($replacement != '') {
+			$replacement = $GLOBALS['TSFE']->cObj->parseFunc($replacement, $this->parseFunc);
+			$replacement = preg_replace('/^<p>(.+)<\/p>$/s', '\1', $replacement);
+		}
 
 		// stdWrap execution if available
-		if ($stdWrap !== '') {
+		if ($stdWrap != '') {
 			$replacement = $GLOBALS['TSFE']->cObj->stdWrap(
-				$replacement,
+				($replacement == '' ? $termName : $replacement),
 				$GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_content_replacer.'][$stdWrap . '.']
 			);
 		}

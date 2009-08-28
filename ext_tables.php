@@ -32,6 +32,8 @@ $TCA['tx_content_replacer_term'] = array (
 		'delete' => 'deleted',
 		'enablecolumns' => array (
 			'disabled' => 'hidden',
+			'starttime' => 'starttime',
+			'endtime' => 'endtime'
 		),
 		'dynamicConfigFile' => t3lib_extMgm::extPath($_EXTKEY) . 'tca.php',
 		'iconfile' => t3lib_extMgm::extRelPath($_EXTKEY) .
@@ -52,7 +54,7 @@ $TCA['tx_content_replacer_category'] = array (
 		'default_sortby' => 'ORDER BY category',
 		'delete' => 'deleted',
 		'enablecolumns' => array (
-			'disabled' => 'hidden',
+			'disabled' => 'hidden'
 		),
 		'dynamicConfigFile' => t3lib_extMgm::extPath($_EXTKEY) . 'tca.php',
 		'iconfile' => t3lib_extMgm::extRelPath($_EXTKEY) .
