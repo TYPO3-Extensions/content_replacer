@@ -169,7 +169,7 @@ class tx_content_replacer {
 
 					$search[$termName] = '/' .
 						'<span '. preg_quote($foundTerms[$termName]['pre'], '/') .
-						'class="' . $searchClass . '"' .
+						'class="(.*?)' . $searchClass . '(.*?)"' .
 						preg_quote($foundTerms[$termName]['post'], '/') . '>' .
 						'\s*?' . $searchTerm . '\s*?' .
 						'<\/span>'.
@@ -184,11 +184,13 @@ class tx_content_replacer {
 
 					// pre or post assignments in the origin span tag?
 					if (trim($foundTerms[$termName]['pre']) != '' ||
-						trim($foundTerms[$termName]['post']) != ''
+						trim($foundTerms[$termName]['post']) != '' ||
+						trim($foundTerms[$termName]['classAttribute'])
 					) {
 						$attributes = trim(
 							$foundTerms[$termName]['pre'] . ' ' .
-							$foundTerms[$termName]['post']
+							$foundTerms[$termName]['post'] . ' ' .
+							$foundTerms[$termName]['classAttribute']
 						);
 
 						$replace[$termName] = '<span ' . $attributes . '>' .
@@ -224,26 +226,50 @@ class tx_content_replacer {
 		// parse span tags
 		$matches = array();
 		$prefix = preg_quote($this->extConfig['prefix'], '/');
-		$pattern =
-			'/<span' . // filter in any span tag
-				'(?=[^>]+' . // any attributes of the beginning start tag
-					// only spans with a class which starts with the defined prefix
-					// forward declaration is used to be indepent of the attribute order
-					'(?=(class="' . $prefix . '(.+?)"))' .
+		$pattern = '/' .
+			'<span' . // This expression includes any span nodes and parses
+				'(?=[^>]+' . // any attributes of the beginning start tag.
+					// Use only spans which starts with the defined prefix in the class attribute
+					'(?=(class="(.*?' . $prefix . '.+?)"))' .
 				')' .
-			' (.*?)\1(.*?)>' . // and stop if the closing tag of the beginning node is reached
-			'(.*?)<\/span>' . // and get anything inside the node until the ending span tag
-			'/is'; // case insenstitive and parse it like a single one liner
+			' (.*?)\1(.*?)>' . // and stop if the closing character is reached.
+			'(.*?)<\/span>' . // Finally we fetch the span content!
+			'/is';
 		preg_match_all($pattern, $GLOBALS['TSFE']->content, $matches);
 
 		// order found terms by category
 		$categories = array();
 		foreach ($matches[5] as $index => $term) {
 			$term = trim($term);
-			$categories[$matches[2][$index]][$term]['pre'] = $matches[3][$index];
-			$categories[$matches[2][$index]][$term]['post'] = $matches[4][$index];
+
+			// fetch the category from the available classes
+			$classes = explode(' ', $matches[2][$index]);
+			$category = '';
+			foreach ($classes as $index => $class) {
+				if (strpos(trim($class), $this->extConfig['prefix']) !== false) {
+					$category = str_replace($this->extConfig['prefix'], '', $class);
+					unset($classes[$index]);
+					break;
+				}
+			}
+
+			// something strange happened...
+			if ($category == '') {
+				continue;
+			}
+
+			$categories[$category][$term]['pre'] = $matches[3][$index];
+			$categories[$category][$term]['post'] = $matches[4][$index];
+
+			// add the additional classes
+			$categories[$category][$term]['classAttribute'] = '';
+			$otherClasses = implode(' ', $classes);
+			if ($otherClasses != '') {
+				$categories[$category][$term]['classAttribute'] = 'class="' . $otherClasses . '"';
+			}
 		}
 
+//t3lib_div::debug($categories);
 		return $categories;
 	}
 
