@@ -50,9 +50,11 @@ class tx_content_replacer {
 	 */
 	public function __construct() {
 		// global extension configuration
-		$this->extConfig = unserialize(
-			$GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['content_replacer']
-		);
+		if (isset($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['content_replacer'])) {
+			$this->extConfig = unserialize(
+				$GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['content_replacer']
+			);
+		}
 
 		// typoscript extension configuration
 		$tsConfig = $GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_content_replacer.'];
@@ -72,11 +74,10 @@ class tx_content_replacer {
 	 * @return bool
 	 */
 	public function contentPostProcOutput() {
-		// only enter this hook if the page shouldn't be cached, has COA_INT
-		// or USER_INT objects or the usage is forced by a configuration option
+		// only enter this hook if the page shouldn't be cached or has COA_INT
+		// or USER_INT objects
 		if (!$GLOBALS['TSFE']->no_cache
 			&& !$GLOBALS['TSFE']->isINTincScript()
-			&& !$this->extConfig['useOutputHook']
 		) {
 			return true;
 		}
@@ -95,11 +96,10 @@ class tx_content_replacer {
 	 * @return bool
 	 */
 	public function contentPostProcCached() {
-		// only enter this hook if the page should be cached, hasn't any COA_INT
-		// or USER_INT objects and the usage isn't forced by a configuration option
+		// only enter this hook if the page should be cached and hasn't any COA_INT
+		// or USER_INT objects
 		if ($GLOBALS['TSFE']->no_cache
 			|| $GLOBALS['TSFE']->isINTincScript()
-			|| $this->extConfig['useOutputHook']
 		) {
 			return true;
 		}
@@ -273,7 +273,7 @@ class tx_content_replacer {
 		$GLOBALS['TYPO3_DB']->debugOutput = false;
 		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery (
 			'tx_content_replacer_term.uid, tx_content_replacer_term.pid, ' .
-				'term, replacement, stdWrap, category_uid',
+				'term, replacement, stdWrap, category_uid, sys_language_uid',
 			'tx_content_replacer_term, tx_content_replacer_category',
 			'term IN (' . implode(', ', $termsWhereClause) . ') AND ' .
 				'sys_language_uid IN (-1, 0) AND category = ' . $category . ' AND ' .
@@ -282,40 +282,31 @@ class tx_content_replacer {
 				$GLOBALS['TSFE']->cObj->enableFields('tx_content_replacer_category')
 		);
 
-		// calculate language mode
+		// define language mode
 		$overlayMode = '';
 		$languageMode = '';
-		if ($this->extConfig['sysLanguageMode'] !== 'normal') {
-			$languageMode = $GLOBALS['TSFE']->sys_language_uid;
-			if ($this->extConfig['sysLanguageMode'] === 'strict') {	
-				$overlayMode = 'hideNonTranslated';
-			}
-		} else {
+		if ($this->extConfig['sysLanguageMode'] == 'normal') {
 			$languageMode = $GLOBALS['TSFE']->sys_language_content;
 			$overlayMode = $GLOBALS['TSFE']->sys_language_contentOL;
+		} else {
+			$languageMode = $GLOBALS['TSFE']->sys_language_uid;
+			$overlayMode = 'hideNonTranslated';
 		}
 
 		// record overlay (enables multilanguage support)
 		$terms = array();
 		while ($term = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
-			// overlay only needed if we don't want to fetch the default language
-			if (intval($languageMode) <= 0) {
-				$terms[$term['term']] = $term;
+			// get the translated record if the content language is not the default language
+			if ($languageMode) {
+				$term = $GLOBALS['TSFE']->sys_page->getRecordOverlay(
+					'tx_content_replacer_term',
+					$term,
+					$languageMode,
+					$overlayMode
+				);
 			}
 
-			// get overlay
-			$overlayTerm = $GLOBALS['TSFE']->sys_page->getRecordOverlay(
-				'tx_content_replacer_term',
-				$term,
-				$languageMode,
-				$overlayMode
-			);
-
-			if (count($overlayTerm)) {
-				$terms[$overlayTerm['term']] = $overlayTerm;
-			} elseif ($this->extConfig['sysLanguageMode'] !== 'strict') {
-				$terms[$term['term']] = $term;
-			}
+			$terms[$term['term']] = $term;
 		}
 
 		$GLOBALS['TYPO3_DB']->sql_free_result($res);
