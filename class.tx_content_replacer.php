@@ -230,7 +230,7 @@ class tx_content_replacer {
 			'<span' . // This expression includes any span nodes and parses
 				'(?=[^>]+' . // any attributes of the beginning start tag.
 					// Use only spans which starts with the defined prefix in the class attribute
-					'(?=(class="(.*?' . $prefix . '.+?)"))' .
+					'(?=(class="([^"]*?' . $prefix . '[^"]+?)"))' .
 				')' .
 			' (.*?)\1(.*?)>' . // and stop if the closing character is reached.
 			'(.*?)<\/span>' . // Finally we fetch the span content!
@@ -269,7 +269,6 @@ class tx_content_replacer {
 			}
 		}
 
-//t3lib_div::debug($categories);
 		return $categories;
 	}
 
