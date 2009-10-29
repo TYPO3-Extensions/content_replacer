@@ -169,7 +169,7 @@ class tx_content_replacer {
 
 					$search[$termName] = '/' .
 						'<span '. preg_quote($foundTerms[$termName]['pre'], '/') .
-						'class="([^"*?)' . $searchClass . '([^"]*?)"' .
+						'class="([^"]*?)' . $searchClass . '([^"]*?)"' .
 						preg_quote($foundTerms[$termName]['post'], '/') . '>' .
 						'\s*?' . $searchTerm . '\s*?' .
 						'<\/span>'.
