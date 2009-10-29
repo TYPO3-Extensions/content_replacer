@@ -67,24 +67,25 @@ class tx_content_replacer {
 	}
 
 	/**
-	 * Just a wrapper for the main function! It's used for the contentPostProc-all hook.
+	 * Just a wrapper for the main function! It's used for the contentPostProc-output hook.
 	 * 
 	 * @return bool
 	 */
-	public function contentPostProcAll() {
-		// do nothing if the all hook is disabled by the user or
-		// the content should be cached!
-		if (!$GLOBALS['TSFE']->no_cache &&
-			!$this->extConfig['useAllHook']
+	public function contentPostProcOutput() {
+		// only enter this hook if the page shouldn't be cached, has COA_INT
+		// or USER_INT objects or the usage is forced by a configuration option
+		if (!$GLOBALS['TSFE']->no_cache
+			&& !$GLOBALS['TSFE']->isINTincScript()
+			&& !$this->extConfig['useOutputHook']
 		) {
 			return true;
 		}
 
-		// do nothing if the disable flag is set
+		// do nothing if the disable flag for the extension is set
 		if ($this->extConfig['disable']) {
 			return true;
 		}
-		
+
 		return $this->main();
 	}
 
@@ -94,6 +95,15 @@ class tx_content_replacer {
 	 * @return bool
 	 */
 	public function contentPostProcCached() {
+		// only enter this hook if the page should be cached, hasn't any COA_INT
+		// or USER_INT objects and the usage isn't forced by a configuration option
+		if ($GLOBALS['TSFE']->no_cache
+			|| $GLOBALS['TSFE']->isINTincScript()
+			|| $this->extConfig['useOutputHook']
+		) {
+			return true;
+		}
+
 		// do nothing if the disable flag is set
 		if ($this->extConfig['disable']) {
 			return true;
