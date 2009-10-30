@@ -70,15 +70,16 @@ class tx_content_replacer {
 
 	/**
 	 * Just a wrapper for the main function! It's used for the contentPostProc-output hook.
+	 *
+	 * This hook is executed if the page contains *_INT objects! It's called always at the
+	 * last hook before the final output. This isn't the case if you are using a
+	 * static file cache like nc_staticfilecache.
 	 * 
 	 * @return bool
 	 */
 	public function contentPostProcOutput() {
-		// only enter this hook if the page shouldn't be cached or has COA_INT
-		// or USER_INT objects
-		if (!$GLOBALS['TSFE']->no_cache
-			&& !$GLOBALS['TSFE']->isINTincScript()
-		) {
+		// only enter this hook if the page contains COA_INT or USER_INT objects
+		if (!$GLOBALS['TSFE']->isINTincScript()) {
 			return true;
 		}
 
@@ -91,16 +92,16 @@ class tx_content_replacer {
 	}
 
 	/**
-	 * Just a wrapper for the main function!  It's used for the contentPostProc-cache hook.
+	 * Just a wrapper for the main function!  It's used for the contentPostProc-all hook.
+	 *
+	 * The hook is only executed if the page doesn't contains any *_INT objects. It's called
+	 * always if the page wasn't cached or for the first hit!
 	 *
 	 * @return bool
 	 */
-	public function contentPostProcCached() {
-		// only enter this hook if the page should be cached and hasn't any COA_INT
-		// or USER_INT objects
-		if ($GLOBALS['TSFE']->no_cache
-			|| $GLOBALS['TSFE']->isINTincScript()
-		) {
+	public function contentPostProcAll() {
+		// only enter this hook if the page doesn't contains any COA_INT or USER_INT objects
+		if ($GLOBALS['TSFE']->isINTincScript()) {
 			return true;
 		}
 
