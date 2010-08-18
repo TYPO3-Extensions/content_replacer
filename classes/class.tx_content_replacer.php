@@ -3,7 +3,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009 Stefan Galinski <stefan.galinski@gmail.com>
+*  (c) 2009-2010 Stefan Galinski <stefan.galinski@gmail.com>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -24,48 +24,47 @@
 ***************************************************************/
 
 /**
- * This file contains the complete logic of the extension.
- *
- * @author Stefan Galinski <stefan.galinski@gmail.com>
- */
-
-/**
- * This class contains the parsing and replacing mechanisms of the extension.
+ * Methods for the substition of specified terms
  *
  * @author Stefan Galinski <stefan.galinski@gmail.com>
  */
 class tx_content_replacer {
-	/** @var $extConfig array holds the extension configuration */
-	private $extConfig = array();
-
-	/** @var $parseFunc array holds the lib.parseFunc_RTE configuration */
-	private $parseFunc = array();
+	/**
+	 * Extension Configuration
+	 *
+	 * @var array
+	 */
+	protected $extensionConfiguration = array();
 
 	/**
-	 * Constructor
+	 * lib.parseFunc_RTE configuration
 	 *
-	 * Prepares the extension configuration array!
+	 * @var array
+	 */
+	protected $parseFunc = array();
+
+	/**
+	 * Constructor: Initializes the internal class properties.
+	 *
+	 * Note: The extension configuration array consists of the global and typoscript configuration.
 	 *
 	 * @return void
 	 */
 	public function __construct() {
-		// global extension configuration
+		$this->parseFunc = $GLOBALS['TSFE']->tmpl->setup['lib.']['parseFunc_RTE.'];
+
 		if (isset($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['content_replacer'])) {
-			$this->extConfig = unserialize(
+			$this->extensionConfiguration = unserialize(
 				$GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['content_replacer']
 			);
 		}
 
-		// typoscript extension configuration
-		$tsConfig = $GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_content_replacer.'];
-		if (is_array($tsConfig)) {
-			foreach ($tsConfig as $key => $value) {
-				$this->extConfig[$key] = $value;
+		$typoscriptConfiguration = $GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_content_replacer.'];
+		if (is_array($typoscriptConfiguration)) {
+			foreach ($typoscriptConfiguration as $key => $value) {
+				$this->extensionConfiguration[$key] = $value;
 			}
 		}
-
-		// get the parseFunc_RTE configuration
-		$this->parseFunc = $GLOBALS['TSFE']->tmpl->setup['lib.']['parseFunc_RTE.'];
 	}
 
 	/**
@@ -75,20 +74,14 @@ class tx_content_replacer {
 	 * last hook before the final output. This isn't the case if you are using a
 	 * static file cache like nc_staticfilecache.
 	 * 
-	 * @return bool
+	 * @return void
 	 */
 	public function contentPostProcOutput() {
-		// only enter this hook if the page contains COA_INT or USER_INT objects
-		if (!$GLOBALS['TSFE']->isINTincScript()) {
-			return true;
+		if (!$GLOBALS['TSFE']->isINTincScript() || $this->extensionConfiguration['disable']) {
+			return;
 		}
 
-		// do nothing if the disable flag for the extension is set
-		if ($this->extConfig['disable']) {
-			return true;
-		}
-
-		return $this->main();
+		$this->main();
 	}
 
 	/**
@@ -97,175 +90,113 @@ class tx_content_replacer {
 	 * The hook is only executed if the page doesn't contains any *_INT objects. It's called
 	 * always if the page wasn't cached or for the first hit!
 	 *
-	 * @return bool
+	 * @return void
 	 */
 	public function contentPostProcAll() {
-		// only enter this hook if the page doesn't contains any COA_INT or USER_INT objects
-		if ($GLOBALS['TSFE']->isINTincScript()) {
-			return true;
+		if ($GLOBALS['TSFE']->isINTincScript() || $this->extensionConfiguration['disable']) {
+			return;
 		}
 
-		// do nothing if the disable flag is set
-		if ($this->extConfig['disable']) {
-			return true;
-		}
-
-		return $this->main();
+		$this->main();
 	}
 
 	/**
-	 * Contains the process logic of the whole extension!
+	 * Controlling code
 	 *
-	 * @return bool
+	 * @return void
 	 */
-	public function main() {
-		// the content should be parsed until all occurences are replaced
-		// this enables the replacing of occurences in the replacement texts
+	protected function main() {
 		$loopCounter = 0;
-		while (true) {
-			// get categories
-			$categories = $this->parseContent();
-
-			// cancel condition of the endless loop
-			if (!count($categories) || ++$loopCounter > $this->extConfig['amountOfPasses']) {
+		while (TRUE) {
+				// recursion check to prevent endless loops
+			++$loopCounter;
+			if ($loopCounter > $this->extensionConfiguration['amountOfPasses']) {
 				break;
 			}
 
-			// loop categories
-			foreach ($categories as $category => $foundTerms) {
-				// fetch term informations (the wildcard term "*" is added manually to the array)
-				$filterTerms = array_keys($foundTerms);
-				$filterTerms[] = '*';
-				$terms = $this->fetchTerms($filterTerms, $category);
+				// no further occurences => break the loop to save performance
+			$occurences = $this->parseContent();
+			if (!count($occurences)) {
+				break;
+			}
 
-				// merge entries which are on the page with the database informations
-				$terms = array_merge(array_flip($filterTerms), $terms);
-
-				// get default replacement if available
-				$defaultReplacement = '';
-				if (is_array($terms['*'])) {
-					$defaultReplacement = $terms['*'];
-				}
-				unset($terms['*']);
-
-				// loop terms
-				$search = $replace = array();
-				foreach($terms as $termName => $term) {
-					// use default replacement if the term wasn't defined in the database
-					if (!is_array($term)) {
-						$term = $defaultReplacement;
-						$term['term'] = $termName;
-					}
-
-					// built search string (respects the wildcard * for any term)
-					$searchTerm = preg_quote(
-						($term['term'] == '*' ? '.*?' : $term['term']),
-						'/'
-					);
-
-					$searchClass = preg_quote(
-						$this->extConfig['prefix'] . $category,
-						'/'
-					);
-
-					$search[$termName] = '/' .
-						'<span '. preg_quote($foundTerms[$termName]['pre'], '/') .
-						'class="([^"]*?)' . $searchClass . '([^"]*?)"' .
-						preg_quote($foundTerms[$termName]['post'], '/') . '>' .
-						'\s*?' . $searchTerm . '\s*?' .
-						'<\/span>'.
-					'/i';
-
-					// prepare replacement string
-					$replace[$termName] = $this->prepareTermReplacement(
-						$term['replacement'],
-						$term['stdWrap'],
-						$termName
-					);
-
-					// pre or post assignments in the origin span tag?
-					if (trim($foundTerms[$termName]['pre']) != '' ||
-						trim($foundTerms[$termName]['post']) != '' ||
-						trim($foundTerms[$termName]['classAttribute'])
-					) {
-						$attributes = trim(
-							$foundTerms[$termName]['pre'] . ' ' .
-							$foundTerms[$termName]['post'] . ' ' .
-							$foundTerms[$termName]['classAttribute']
-						);
-
-						$replace[$termName] = '<span ' . $attributes . '>' .
-							$replace[$termName] . '</span>';
-					}
-				}
-
-				// finally replace the occurences for the category
-				$GLOBALS['TSFE']->content = preg_replace(
-					$search,
-					$replace,
-					$GLOBALS['TSFE']->content
-				);
+				// replace the terms category by category
+			foreach ($occurences as $category => $terms) {
+				$this->replaceTermsByCategory($category, $terms);
 			}
 		}
-
-		return true;
 	}
 
 	/**
-	 * This function parses the generated content by TYPO3 and returns an ordered list
-	 * of found terms with there related categories. The structure is like the following example:
+	 * This function parses the generated content from TYPO3 and returns an ordered list
+	 * of terms with their related categories.
 	 *
-	 * - category1
-	 *   - term1
-	 *   - term2
-	 * - category2
-	 *   - term1
+	 * Structure:
+	 * 
+	 * category1
+	 * |-> term1
+	 * |-> term2
+	 * category2
+	 * |-> term1
+	 * ...
 	 *
-	 * @return array ordered list of found matches by the category
+	 * Each term has some additional properties:
+	 * - pre: attributes before the class attribute
+	 * - post: attributes after the class attribute
+	 * - classAttribute: the class attribute without the replacement class
+	 *
+	 * @return array 
 	 */
 	protected function parseContent() {
-		// parse span tags
+			// fetch terms
 		$matches = array();
-		$prefix = preg_quote($this->extConfig['prefix'], '/');
+		$prefix = preg_quote($this->extensionConfiguration['prefix'], '/');
 		$pattern = '/' .
-			'<span' . // This expression includes any span nodes and parses
-				'(?=[^>]+' . // any attributes of the beginning start tag.
-					// Use only spans which starts with the defined prefix in the class attribute
+			'<span' .			// This expression includes any span nodes and parses
+				'(?=[^>]+' .	// any attributes of the beginning start tag.
 					'(?=(class="([^"]*?' . $prefix . '[^"]+?)"))' .
-				')' .
-			' (.*?)\1(.*?)>' . // and stop if the closing character is reached.
-			'(.*?)<\/span>' . // Finally we fetch the span content!
+				')' .			// Use only spans which start with the defined class prefix
+			' (.*?)\1(.*?)>' .	// and stop if the closing character is reached.
+			'(.*?)<\/span>' .	// Finally we fetch the span content!
 			'/is';
 		preg_match_all($pattern, $GLOBALS['TSFE']->content, $matches);
 
-		// order found terms by category
+			// order terms by category
 		$categories = array();
 		foreach ($matches[5] as $index => $term) {
 			$term = trim($term);
 
-			// fetch the category from the available classes
-			$classes = explode(' ', $matches[2][$index]);
+				// select the css class with the category (defined by the prefix)
 			$category = '';
+			$classes = explode(' ', $matches[2][$index]);
 			foreach ($classes as $index => $class) {
-				if (strpos(trim($class), $this->extConfig['prefix']) !== false) {
-					$category = str_replace($this->extConfig['prefix'], '', $class);
+				$class = trim($class);
+
+				if (FALSE !== strpos($class, $this->extensionConfiguration['prefix'])) {
+					$category = str_replace($this->extensionConfiguration['prefix'], '', $class);
 					unset($classes[$index]);
 					break;
 				}
 			}
 
-			// something strange happened...
-			if ($category == '') {
+				// error prevention (should never happen)
+			if ($category === '') {
+				t3lib_div::sysLog(
+					'Incorrect match: ' . $classes,
+					'content_replacer',
+					t3lib_div::SYSLOG_SEVERITY_WARNING
+				);
+				
 				continue;
 			}
 
+				// add the category/term with some additional informations
 			$categories[$category][$term]['pre'] = $matches[3][$index];
 			$categories[$category][$term]['post'] = $matches[4][$index];
 
-			// add the additional classes
 			$categories[$category][$term]['classAttribute'] = '';
 			$otherClasses = implode(' ', $classes);
-			if ($otherClasses != '') {
+			if ($otherClasses !== '') {
 				$categories[$category][$term]['classAttribute'] = 'class="' . $otherClasses . '"';
 			}
 		}
@@ -274,14 +205,87 @@ class tx_content_replacer {
 	}
 
 	/**
-	 * This function returns the given term names with their related informations.
+	 * Replaces the given terms with their related replacement values.
 	 *
-	 * @param $filterTerms array list of term names
-	 * @param $category string category name
-	 * @return array terms with their related informations
+	 * @see parseContent() for the array structure
+	 * @param $category array
+	 * @param $terms array
+	 * @return void
+	 */
+	protected function replaceTermsByCategory($category, $replacementTerms) {
+			// fetch term informations
+		$replacementTerms['*'] = array();
+		$terms = array_keys($replacementTerms);
+		$terms = array_merge_recursive(
+			$replacementTerms,
+			$this->fetchTerms($terms, $category)
+		);
+
+			// if the wildcard term was defined for the category, then we use it
+			// as the default replacement object
+		$defaultReplacement = '';
+		if (is_array($terms['*'])) {
+			$defaultReplacement = $terms['*'];
+		}
+		unset($terms['*']);
+
+			// loop terms
+		$search = $replace = array();
+		foreach($terms as $termName => $term) {
+				// if the term wasn't defined in the database, we are using the default
+				// replacement object (wildcard term or an empty string)
+			if (!isset($term['uid'])) {
+				$term = $defaultReplacement;
+				$term['term'] = $termName;
+			}
+
+				// built regular expression for this term
+			$searchClass = preg_quote($this->extensionConfiguration['prefix'] . $category, '/');
+			$search[$termName] = '/' .
+				'<span ' . preg_quote($term['pre'], '/') .
+				'class="([^"]*?)' . $searchClass . '([^"]*?)"' .
+				preg_quote($term['post'], '/') . '>' .
+				'\s*?' . preg_quote($term['term'], '/') . '\s*?' .
+				'<\/span>'.
+			'/i';
+
+				// built replacement text for this term
+			$replace[$termName] = $this->prepareTermReplacement(
+				$term['replacement'],
+				trim($term['stdWrap']),
+				$termName
+			);
+
+			if (trim($term[$termName]['pre']) !== ''
+				|| trim($term[$termName]['post']) !== ''
+				|| trim($term[$termName]['classAttribute']) !== ''
+			) {
+				$attributes = trim(
+					$term[$termName]['pre'] . ' ' .
+					$term[$termName]['post'] . ' ' .
+					$term[$termName]['classAttribute']
+				);
+
+				$replace[$termName] = '<span ' . $attributes . '>' . $replace[$termName] . '</span>';
+			}
+		}
+
+			// replace all terms by multiple regular expressions
+		$GLOBALS['TSFE']->content = preg_replace(
+			$search,
+			$replace,
+			$GLOBALS['TSFE']->content
+		);
+	}
+
+	/**
+	 * Returns the given terms with their related informations.
+	 *
+	 * @param $filterTerms array
+	 * @param $category string
+	 * @return array
 	 */
 	protected function fetchTerms($filterTerms, $category) {
-		// escape strings
 		$category = $GLOBALS['TYPO3_DB']->fullQuoteStr(
 			$category,
 			'tx_content_replacer_category'
@@ -295,9 +299,8 @@ class tx_content_replacer {
 			);
 		}
 
-		// get replace terms
-		$GLOBALS['TYPO3_DB']->debugOutput = false;
-		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery (
+		$GLOBALS['TYPO3_DB']->debugOutput = FALSE;
+		$queryResource = $GLOBALS['TYPO3_DB']->exec_SELECTquery (
 			'tx_content_replacer_term.uid, tx_content_replacer_term.pid, ' .
 				'term, replacement, stdWrap, category_uid, sys_language_uid',
 			'tx_content_replacer_term, tx_content_replacer_category',
@@ -311,7 +314,7 @@ class tx_content_replacer {
 		// define language mode
 		$overlayMode = '';
 		$languageMode = '';
-		if ($this->extConfig['sysLanguageMode'] == 'normal') {
+		if ($this->extensionConfiguration['sysLanguageMode'] == 'normal') {
 			$languageMode = $GLOBALS['TSFE']->sys_language_content;
 			$overlayMode = $GLOBALS['TSFE']->sys_language_contentOL;
 		} else {
@@ -321,7 +324,7 @@ class tx_content_replacer {
 
 		// record overlay (enables multilanguage support)
 		$terms = array();
-		while ($term = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
+		while ($term = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($queryResource)) {
 			// get the translated record if the content language is not the default language
 			if ($languageMode) {
 				$term = $GLOBALS['TSFE']->sys_page->getRecordOverlay(
@@ -340,26 +343,29 @@ class tx_content_replacer {
 	}
 
 	/**
-	 * This function returns a prepared text. The given text has ran trough the
-	 * rte parse and stdWrap function. The latter one must be a stdWrap configuration class
-	 * in the namespace of this extension (plugin.tx_content_replacer.).
+	 * Prepares a replacement value by applying the possible stdWrap and executing RTE
+	 * transformations. The stdWrap typoscript object must be defined inside the extension
+	 * namespace "plugin.tx_content_replacer".
 	 *
-	 * @param $replacement string text
-	 * @param $stdWrap stdWrap configuration class (see description for more informations)
-	 * @param $termName original name of the term which is given to the stdWrap as an alternative for an empty replacement
-	 * @return string prepared text
+	 * Note: If the replacement text is empty, we pass the term name as the initial content of the
+	 * stdWrap object.
+	 *
+	 * @param $replacement string
+	 * @param $stdWrap string
+	 * @param $termName string
+	 * @return string
 	 */
 	protected function prepareTermReplacement($replacement, $stdWrap, $termName) {
-		// rte transformation of the replacement string
-		if ($replacement != '') {
+			// rte transformation (the surrounding p tags are removed afterwards)
+		if ($replacement !== '') {
 			$replacement = $GLOBALS['TSFE']->cObj->parseFunc($replacement, $this->parseFunc);
 			$replacement = preg_replace('/^<p>(.+)<\/p>$/s', '\1', $replacement);
 		}
 
-		// stdWrap execution if available
-		if ($stdWrap != '') {
+			// stdWrap transformation
+		if ($stdWrap !== '') {
 			$replacement = $GLOBALS['TSFE']->cObj->stdWrap(
-				($replacement == '' ? $termName : $replacement),
+				($replacement === '' ? $termName : $replacement),
 				$GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_content_replacer.'][$stdWrap . '.']
 			);
 		}
@@ -368,8 +374,8 @@ class tx_content_replacer {
 	}
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/content_replacer/class.tx_content_replacer.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/content_replacer/class.tx_content_replacer.php']);
+if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/content_replacer/classes/class.tx_content_replacer.php'])	{
+	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/content_replacer/classes/class.tx_content_replacer.php']);
 }
 
 ?>
