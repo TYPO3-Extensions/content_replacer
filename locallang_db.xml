@@ -2,20 +2,20 @@
 <T3locallang>
 	<meta type="array">
 		<type>database</type>
-		<description>Language labels for database tables/fields belonging to extension 'content_parser'</description>
+		<description>Language labels for database tables/fields belonging to extension 'content_replacer'</description>
 		<generator>LFEditor</generator>
 		<authorName>Stefan Galinski</authorName>
 		<authorEmail>stefan.galinski@gmail.com</authorEmail>
 	</meta>
 	<data type="array">
 		<languageKey index="default" type="array">
-			<label index="tx_content_replacer_term">Term (Find/Replace)</label>
+			<label index="tx_content_replacer_term">Substitution Term</label>
 			<label index="tx_content_replacer_term.description">Description</label>
 			<label index="tx_content_replacer_term.term">Term</label>
 			<label index="tx_content_replacer_term.category_uid">Category</label>
 			<label index="tx_content_replacer_term.replacement">Replacement</label>
-			<label index="tx_content_replacer_term.stdWrap">stdWrap configuration class (must be in the namespace of the extension!)</label>
-			<label index="tx_content_replacer_category">Category (Find/Replace)</label>
+			<label index="tx_content_replacer_term.stdWrap">stdWrap configuration class (defined in namespace "plugin.tx_content_replacer")</label>
+			<label index="tx_content_replacer_category">Substitution Category</label>
 			<label index="tx_content_replacer_category.category">Category</label>
 			<label index="tx_content_replacer_category.description">Description</label>
 		</languageKey>
