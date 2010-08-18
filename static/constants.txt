@@ -1,10 +1,10 @@
 plugin.tx_content_replacer {
-	# cat=plugin.tx_content_replacer/enable/a; type=boolean; label= Disable Replace Mechanism: Do you want to find and replace your defined terms?
+	# cat=plugin.tx_content_replacer/enable/a; type=boolean; label= Disable Replace Mechanism: Do you want to disable the replacement of your defined terms?
 	disabled = 0
 
-	# cat=plugin.tx_content_replacer/enable/a; type=int+; label= Amount Of Passes: Define the amount of find/replace passes through the content.
-	amountOfPasses = 3
+	# cat=plugin.tx_content_replacer//a; type=int+; label= Amount Of Passes: Define the amount of find/replace passes through the content. Be cautious, because high values can significantly decrease your site performance if you have built an endless loop.
+	amountOfPasses = 5
 
-	# cat=plugin.tx_content_replacer//a; type=text; label= Class Prefix: The prefix for the class of the replace tags which should be parsed and replaced.
+	# cat=plugin.tx_content_replacer//a; type=text; label= Class Prefix: The class prefix for the replace tags which should be substituted.
 	prefix = replace-
 }
