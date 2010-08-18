@@ -12,7 +12,7 @@
 
 $EM_CONF[$_EXTKEY] = array(
 	'title' => 'Content Replacer',
-	'description' => 'This extension parses your content and replaces keywords in special span tags with a defined replacement. It supports multilanguage, categories, wildcard terms, RTE insertion and stdWrap properties on the replacement text.',
+	'description' => 'You need a fast substitution of terms with full support of typoscript, categories and RTE integration? If yes, the extension could be perfectly fit into your project. The performance is gained by some manual work in the content by wrapping the replacement terms.',
 	'category' => 'fe',
 	'shy' => 0,
 	'version' => '1.3.2',
@@ -34,8 +34,8 @@ $EM_CONF[$_EXTKEY] = array(
 	'CGLcompliance_note' => '',
 	'constraints' => array(
 		'depends' => array(
-			'typo3' => '4.0.0-4.2.99',
-			'php' => '5.0.0-5.2.99',
+			'typo3' => '4.0.0-4.4.99',
+			'php' => '5.0.0-5.3.99',
 		),
 		'conflicts' => array(
 		),
