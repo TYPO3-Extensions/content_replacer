@@ -169,12 +169,12 @@ class tx_content_replacer {
 				// select the css class with the category (defined by the prefix)
 			$category = '';
 			$classes = explode(' ', $matches[2][$index]);
-			foreach ($classes as $index => $class) {
+			foreach ($classes as $classIndex => $class) {
 				$class = trim($class);
 
 				if (FALSE !== strpos($class, $this->extensionConfiguration['prefix'])) {
 					$category = str_replace($this->extensionConfiguration['prefix'], '', $class);
-					unset($classes[$index]);
+					unset($classes[$classIndex]);
 					break;
 				}
 			}
@@ -235,7 +235,7 @@ class tx_content_replacer {
 				// if the term wasn't defined in the database, we are using the default
 				// replacement object (wildcard term or an empty string)
 			if (!isset($term['uid'])) {
-				$term = $defaultReplacement;
+				$term = array_merge($term, $defaultReplacement);
 				$term['term'] = $termName;
 			}
 
@@ -256,14 +256,15 @@ class tx_content_replacer {
 				$termName
 			);
 
-			if (trim($term[$termName]['pre']) !== ''
-				|| trim($term[$termName]['post']) !== ''
-				|| trim($term[$termName]['classAttribute']) !== ''
+			if (trim($term['pre']) !== ''
+				|| trim($term['post']) !== ''
+				|| trim($term['classAttribute']) !== ''
 			) {
+				
 				$attributes = trim(
-					$term[$termName]['pre'] . ' ' .
-					$term[$termName]['post'] . ' ' .
-					$term[$termName]['classAttribute']
+					$term['pre'] . ' ' .
+					$term['post'] . ' ' .
+					$term['classAttribute']
 				);
 
 				$replace[$termName] = '<span ' . $attributes . '>' . $replace[$termName] . '</span>';
