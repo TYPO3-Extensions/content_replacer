@@ -311,10 +311,10 @@ class tx_content_replacer {
 				$GLOBALS['TSFE']->cObj->enableFields('tx_content_replacer_category')
 		);
 
-		// define language mode
+			// define language mode
 		$overlayMode = '';
 		$languageMode = '';
-		if ($this->extensionConfiguration['sysLanguageMode'] == 'normal') {
+		if ($this->extensionConfiguration['sysLanguageMode'] === 'normal') {
 			$languageMode = $GLOBALS['TSFE']->sys_language_content;
 			$overlayMode = $GLOBALS['TSFE']->sys_language_contentOL;
 		} else {
@@ -322,10 +322,9 @@ class tx_content_replacer {
 			$overlayMode = 'hideNonTranslated';
 		}
 
-		// record overlay (enables multilanguage support)
+			// overlay record with an other language if required
 		$terms = array();
 		while ($term = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($queryResource)) {
-			// get the translated record if the content language is not the default language
 			if ($languageMode) {
 				$term = $GLOBALS['TSFE']->sys_page->getRecordOverlay(
 					'tx_content_replacer_term',
@@ -337,8 +336,8 @@ class tx_content_replacer {
 
 			$terms[$term['term']] = $term;
 		}
-
-		$GLOBALS['TYPO3_DB']->sql_free_result($res);
+		$GLOBALS['TYPO3_DB']->sql_free_result($queryResource);
+		
 		return $terms;
 	}
 
