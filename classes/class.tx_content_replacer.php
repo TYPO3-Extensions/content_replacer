@@ -235,7 +235,7 @@ class tx_content_replacer {
 				// if the term wasn't defined in the database, we are using the default
 				// replacement object (wildcard term or an empty string)
 			if (!isset($term['uid'])) {
-				$term = array_merge($term, $defaultReplacement);
+				$term = array_merge((array)$term, $defaultReplacement);
 				$term['term'] = $termName;
 			}
 
