@@ -1,4 +1,5 @@
 <?php
+
 if (!defined('TYPO3_MODE')) {
 	die ('Access denied.');
 }
@@ -7,15 +8,15 @@ $TCA['tx_content_replacer_term'] = array(
 	'ctrl' => $TCA['tx_content_replacer_term']['ctrl'],
 	'interface' => array(
 		'showRecordFieldList' => 'sys_language_uid, l10n_parent, l10n_diffsource, hidden,
-			term, category_uid, stdWrap, replacement, description, starttime, endtime'
+			term, category_uid, stdWrap, replacement, description, starttime, endtime',
 	),
 	'types' => array(
 		0 => array(
 			'showitem' => 'sys_language_uid;;;;1-1-1, l10n_parent, l10n_diffsource, hidden;;1, term,
 				category_uid, stdWrap,
 				replacement;;;richtext[*]:rte_transform[mode=ts_css|imgpath=uploads/tx_content_parser/rte/],
-				description, starttime, endtime, --div--'
-		)
+				description, starttime, endtime, --div--',
+		),
 	),
 	'palettes' => array(
 		0 => array(
@@ -29,7 +30,7 @@ $TCA['tx_content_replacer_term'] = array(
 				'type' => 'input',
 				'size' => 30,
 				'max'  => 30,
-			)
+			),
 		),
 		'sys_language_uid' => array(
 			'exclude' => TRUE,
@@ -42,7 +43,7 @@ $TCA['tx_content_replacer_term'] = array(
 					array('LLL:EXT:lang/locallang_general.php:LGL.allLanguages', -1),
 					array('LLL:EXT:lang/locallang_general.php:LGL.default_value', 0)
 				),
-			)
+			),
 		),
 		'l10n_parent' => array(
 			'exclude' => TRUE,
@@ -57,11 +58,11 @@ $TCA['tx_content_replacer_term'] = array(
 				'foreign_table_where' =>
 					'AND tx_content_replacer_term.pid=###CURRENT_PID### ' .
 					'AND tx_content_replacer_term.sys_language_uid IN (-1,0)',
-			)
+			),
 		),
 		'l10n_diffsource' => array(
 			'config' => array(
-				'type' => 'passthrough'
+				'type' => 'passthrough',
 			)
 		),
 		'hidden' => array(
@@ -69,7 +70,7 @@ $TCA['tx_content_replacer_term'] = array(
 			'label' => 'LLL:EXT:lang/locallang_general.xml:LGL.hidden',
 			'config' => array(
 				'type' => 'check',
-				'default' => FALSE
+				'default' => FALSE,
 			)
 		),
 		'starttime' => array(
@@ -81,7 +82,7 @@ $TCA['tx_content_replacer_term'] = array(
 				'max' => 20,
 				'eval' => 'date',
 				'checkbox' => 0,
-				'default' => 0
+				'default' => 0,
 			)
 		),
 		'endtime' => array(
@@ -135,9 +136,9 @@ $TCA['tx_content_replacer_term'] = array(
 							'setValue' => 'prepend'
 						),
 						'script' => 'wizard_add.php',
-					)
-				)
-			)
+					),
+				),
+			),
 		),
 		'stdWrap' => array(
 			'l10n_mode' => 'mergeIfNotBlank',
@@ -147,15 +148,15 @@ $TCA['tx_content_replacer_term'] = array(
 				'size' => 40,
 				'max' => 256,
 				'eval' => 'trim',
-			)
+			),
 		),
 		'replacement' => array(
 			'label' => 'LLL:EXT:content_replacer/locallang_db.xml:tx_content_replacer_term.replacement',
 			'config' => array(
 				'type' => 'text',
 				'cols' => 40,
-				'rows' => 3
-			)
+				'rows' => 3,
+			),
 		),
 		'description' => array(
 			'exclude' => TRUE,
@@ -163,25 +164,25 @@ $TCA['tx_content_replacer_term'] = array(
 			'config' => array(
 				'type' => 'text',
 				'cols' => 40,
-				'rows' => 3
-			)
+				'rows' => 3,
+			),
 		),
-	)
+	),
 );
 
 $TCA['tx_content_replacer_category'] = array(
 	'ctrl' => $TCA['tx_content_replacer_category']['ctrl'],
 	'interface' => array(
-		'showRecordFieldList' => 'hidden, category, description'
+		'showRecordFieldList' => 'hidden, category, description',
 	),
 	'types' => array(
 		0 => array(
-			'showitem' => 'hidden;;1, category, description, --div--'
+			'showitem' => 'hidden;;1, category, description, --div--',
 		)
 	),
 	'palettes' => array(
 		0 => array(
-			'showitem' => ''
+			'showitem' => '',
 		),
 	),
 	'columns' => array(
@@ -191,15 +192,15 @@ $TCA['tx_content_replacer_category'] = array(
 				'type' => 'input',
 				'size' => 30,
 				'max'  => 30,
-			)
+			),
 		),
 		'hidden' => array(
 			'exclude' => TRUE,
 			'label' => 'LLL:EXT:lang/locallang_general.xml:LGL.hidden',
 			'config' => array(
 				'type' => 'check',
-				'default' => FALSE
-			)
+				'default' => FALSE,
+			),
 		),
 		'category' => array(
 			'l10n_mode' => 'exclude',
@@ -209,7 +210,7 @@ $TCA['tx_content_replacer_category'] = array(
 				'size' => 40,
 				'max' => 256,
 				'eval' => 'trim,required,unique',
-			)
+			),
 		),
 		'description' => array(
 			'exclude' => TRUE,
@@ -217,10 +218,10 @@ $TCA['tx_content_replacer_category'] = array(
 			'config' => array(
 				'type' => 'text',
 				'cols' => 40,
-				'rows' => 3
-			)
+				'rows' => 3,
+			),
 		),
-	)
+	),
 );
 
 ?>
