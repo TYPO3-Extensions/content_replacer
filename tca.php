@@ -25,11 +25,11 @@ $TCA['tx_content_replacer_term'] = array(
 	),
 	'columns' => array(
 		't3ver_label' => array(
-			'label'  => 'LLL:EXT:lang/locallang_general.xml:LGL.versionLabel',
+			'label' => 'LLL:EXT:lang/locallang_general.xml:LGL.versionLabel',
 			'config' => array(
 				'type' => 'input',
 				'size' => 30,
-				'max'  => 30,
+				'max' => 30,
 			),
 		),
 		'sys_language_uid' => array(
@@ -55,8 +55,7 @@ $TCA['tx_content_replacer_term'] = array(
 					array('', 0),
 				),
 				'foreign_table' => 'tx_content_replacer_term',
-				'foreign_table_where' =>
-					'AND tx_content_replacer_term.pid=###CURRENT_PID### ' .
+				'foreign_table_where' => 'AND tx_content_replacer_term.pid=###CURRENT_PID### ' .
 					'AND tx_content_replacer_term.sys_language_uid IN (-1,0)',
 			),
 		),
@@ -187,11 +186,11 @@ $TCA['tx_content_replacer_category'] = array(
 	),
 	'columns' => array(
 		't3ver_label' => array(
-			'label'  => 'LLL:EXT:lang/locallang_general.xml:LGL.versionLabel',
+			'label' => 'LLL:EXT:lang/locallang_general.xml:LGL.versionLabel',
 			'config' => array(
 				'type' => 'input',
 				'size' => 30,
-				'max'  => 30,
+				'max' => 30,
 			),
 		),
 		'hidden' => array(
