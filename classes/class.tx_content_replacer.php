@@ -3,7 +3,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009-2010 Stefan Galinski <stefan.galinski@gmail.com>
+*  (c) 2009-2011 Stefan Galinski <stefan.galinski@gmail.com>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -24,7 +24,7 @@
 ***************************************************************/
 
 /**
- * Methods for the substition of specified terms
+ * Methods for the substitution of specified terms
  *
  * @author Stefan Galinski <stefan.galinski@gmail.com>
  */
@@ -72,7 +72,7 @@ class tx_content_replacer {
 	 *
 	 * This hook is executed if the page contains *_INT objects! It's called always at the
 	 * last hook before the final output. This isn't the case if you are using a
-	 * static file cache like nc_staticfilecache.
+	 * static file cache like "nc_staticfilecache".
 	 * 
 	 * @return void
 	 */
@@ -114,7 +114,7 @@ class tx_content_replacer {
 				break;
 			}
 
-				// no further occurences => break the loop to save performance
+				// no further occurrences  => break the loop to save performance
 			$occurences = $this->parseContent();
 			if (!count($occurences)) {
 				break;
@@ -190,7 +190,7 @@ class tx_content_replacer {
 				continue;
 			}
 
-				// add the category/term with some additional informations
+				// add the category/term with some additional information's
 			$categories[$category][$term]['pre'] = $matches[3][$index];
 			$categories[$category][$term]['post'] = $matches[4][$index];
 
@@ -213,7 +213,7 @@ class tx_content_replacer {
 	 * @return void
 	 */
 	protected function replaceTermsByCategory($category, $replacementTerms) {
-			// fetch term informations
+			// fetch term information's
 		$replacementTerms['*'] = array();
 		$terms = array_keys($replacementTerms);
 		$terms = array_merge_recursive(
@@ -280,7 +280,7 @@ class tx_content_replacer {
 	}
 
 	/**
-	 * Returns the given terms with their related informations.
+	 * Returns the given terms with their related information's.
 	 *
 	 * @param $filterTerms array
 	 * @param $category string
@@ -313,8 +313,6 @@ class tx_content_replacer {
 		);
 
 			// define language mode
-		$overlayMode = '';
-		$languageMode = '';
 		if ($this->extensionConfiguration['sysLanguageMode'] === 'normal') {
 			$languageMode = $GLOBALS['TSFE']->sys_language_content;
 			$overlayMode = $GLOBALS['TSFE']->sys_language_contentOL;
