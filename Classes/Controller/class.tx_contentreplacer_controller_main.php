@@ -24,9 +24,11 @@
  ***************************************************************/
 
 /**
- * Methods for the substitution of specified terms
+ * Controlling code of the extension "content_replacer"
  *
  * @author Stefan Galinski <stefan.galinski@gmail.com>
+ * @package TYPO3
+ * @subpackage content_replacer
  */
 class tx_contentreplacer_controller_Main {
 	/**
@@ -44,6 +46,11 @@ class tx_contentreplacer_controller_Main {
 	protected $parseFunc = array();
 
 	/**
+	 * @var tx_contentreplacer_repository_Term
+	 */
+	protected $termRepository = NULL;
+
+	/**
 	 * Constructor: Initializes the internal class properties.
 	 *
 	 * Note: The extension configuration array consists of the global and typoscript configuration.
@@ -52,19 +59,29 @@ class tx_contentreplacer_controller_Main {
 	 */
 	public function __construct() {
 		$this->parseFunc = $GLOBALS['TSFE']->tmpl->setup['lib.']['parseFunc_RTE.'];
+		$this->extensionConfiguration = $this->prepareConfiguration();
+	}
 
+	/**
+	 * Returns the merged extension configuration of the global configuration and the typoscript
+	 * settings.
+	 *
+	 * @return array
+	 */
+	public function prepareConfiguration() {
+		$extensionConfiguration = array();
 		if (isset($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['content_replacer'])) {
-			$this->extensionConfiguration = unserialize(
-				$GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['content_replacer']
-			);
+			$extensionConfiguration = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['content_replacer']);
 		}
 
 		$typoscriptConfiguration = $GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_content_replacer.'];
 		if (is_array($typoscriptConfiguration)) {
 			foreach ($typoscriptConfiguration as $key => $value) {
-				$this->extensionConfiguration[$key] = $value;
+				$extensionConfiguration[$key] = $value;
 			}
 		}
+
+		return $extensionConfiguration;
 	}
 
 	/**
@@ -98,6 +115,17 @@ class tx_contentreplacer_controller_Main {
 		}
 
 		$this->main();
+	}
+
+	/**
+	 * Injects the term repository
+	 *
+	 * @param tx_contentreplacer_repository_Term $repository
+	 * @return void
+	 */
+	public function injectTermRepository(tx_contentreplacer_repository_Term $repository) {
+		$this->termRepository = $repository;
+		$this->termRepository->setExtensionConfiguration($this->extensionConfiguration);
 	}
 
 	/**
@@ -268,64 +296,6 @@ class tx_contentreplacer_controller_Main {
 			$replace,
 			$GLOBALS['TSFE']->content
 		);
-	}
-
-	/**
-	 * Returns the given terms with their related information's.
-	 *
-	 * @param $filterTerms array
-	 * @param $category string
-	 * @return array
-	 */
-	protected function fetchTerms($filterTerms, $category) {
-		$category = $GLOBALS['TYPO3_DB']->fullQuoteStr(
-			$category,
-			'tx_content_replacer_category'
-		);
-
-		$termsWhereClause = array();
-		foreach ($filterTerms as $term) {
-			$termsWhereClause[] = $GLOBALS['TYPO3_DB']->fullQuoteStr(
-				trim($term),
-				'tx_content_replacer_term'
-			);
-		}
-
-		$GLOBALS['TYPO3_DB']->debugOutput = FALSE;
-		$queryResource = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
-			'tx_content_replacer_term.uid, tx_content_replacer_term.pid, ' .
-				'term, replacement, stdWrap, category_uid, sys_language_uid',
-			'tx_content_replacer_term, tx_content_replacer_category',
-			'term IN (' . implode(', ', $termsWhereClause) . ') AND ' .
-				'sys_language_uid IN (-1, 0) AND category = ' . $category . ' AND ' .
-				'tx_content_replacer_category.uid = category_uid ' .
-				$GLOBALS['TSFE']->cObj->enableFields('tx_content_replacer_term') . ' ' .
-				$GLOBALS['TSFE']->cObj->enableFields('tx_content_replacer_category')
-		);
-
-			// define language mode
-		if ($this->extensionConfiguration['sysLanguageMode'] === 'normal') {
-			$languageMode = $GLOBALS['TSFE']->sys_language_content;
-			$overlayMode = $GLOBALS['TSFE']->sys_language_contentOL;
-		} else {
-			$languageMode = $GLOBALS['TSFE']->sys_language_uid;
-			$overlayMode = 'hideNonTranslated';
-		}
-
-			// overlay record with an other language if required
-		$terms = array();
-		while ($term = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($queryResource)) {
-			if ($languageMode) {
-				$term = $GLOBALS['TSFE']->sys_page->getRecordOverlay(
-					'tx_content_replacer_term', $term, $languageMode, $overlayMode
-				);
-			}
-
-			$terms[$term['term']] = $term;
-		}
-		$GLOBALS['TYPO3_DB']->sql_free_result($queryResource);
-
-		return $terms;
 	}
 
 	/**
