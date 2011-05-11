@@ -28,7 +28,7 @@
  *
  * @author Stefan Galinski <stefan.galinski@gmail.com>
  */
-class tx_content_replacer {
+class tx_contentreplacer_controller_Main {
 	/**
 	 * Extension Configuration
 	 *
@@ -317,10 +317,7 @@ class tx_content_replacer {
 		while ($term = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($queryResource)) {
 			if ($languageMode) {
 				$term = $GLOBALS['TSFE']->sys_page->getRecordOverlay(
-					'tx_content_replacer_term',
-					$term,
-					$languageMode,
-					$overlayMode
+					'tx_content_replacer_term', $term, $languageMode, $overlayMode
 				);
 			}
 
@@ -363,8 +360,8 @@ class tx_content_replacer {
 	}
 }
 
-if (defined('TYPO3_MODE') && $GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/content_replacer/classes/class.tx_content_replacer.php']) {
-	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/content_replacer/classes/class.tx_content_replacer.php']);
+if (defined('TYPO3_MODE') && $GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/content_replacer/Classes/Controller/class.tx_contentreplacer_controller_main.php']) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/content_replacer/Classes/Controller/class.tx_contentreplacer_controller_main.php']);
 }
 
 ?>
