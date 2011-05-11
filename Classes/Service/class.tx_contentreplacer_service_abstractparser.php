@@ -114,6 +114,26 @@ abstract class tx_contentreplacer_service_AbstractParser {
 	}
 
 	/**
+	 * Enriches the given terms with information's from the database and returns the default
+	 * term for any replacements.
+	 *
+	 * @param array $terms
+	 * @return string
+	 */
+	protected function prepareFoundTerms(array &$terms) {
+		$replacementTerms['*'] = array();
+		$terms = array_keys($replacementTerms);
+		$configuredTerms = $this->termRepository->fetchTerms($terms, $category);
+		$terms = array_merge_recursive($replacementTerms, $configuredTerms);
+
+			// define default replacement if no other term replacement is available
+		$defaultReplacement = (is_array($terms['*']) ? $terms['*'] : '');
+		unset($terms['*']);
+
+		return $defaultReplacement;
+	}
+
+	/**
 	 * This function parses the generated content from TYPO3 and returns an ordered list
 	 * of terms with their related categories.
 	 *

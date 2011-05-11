@@ -6,6 +6,7 @@ return array(
 	'tx_contentreplacer_repository_term' => $extensionPath . 'Classes/Repository/class.tx_contentreplacer_repository_term.php',
 	'tx_contentreplacer_service_abstractparser' => $extensionPath . 'Classes/Service/class.tx_contentreplacer_service_abstractparser.php',
 	'tx_contentreplacer_service_spanparser' => $extensionPath . 'Classes/Service/class.tx_contentreplacer_service_spanparser.php',
+	'tx_contentreplacer_service_customparser' => $extensionPath . 'Classes/Service/class.tx_contentreplacer_service_customparser.php',
 );
 
 ?>

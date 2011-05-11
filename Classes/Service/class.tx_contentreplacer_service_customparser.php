@@ -30,7 +30,22 @@
  * @package TYPO3
  * @subpackage content_replacer
  */
-class tx_contentreplacer_service_SpanParser extends tx_contentreplacer_service_AbstractParser {
+class tx_contentreplacer_service_CustomParser extends tx_contentreplacer_service_AbstractParser {
+	/**
+	 * @var string
+	 */
+	protected $wrapCharacter = '';
+
+	/**
+	 * Sets the wrap character
+	 *
+	 * @param string $wrapCharacter
+	 * @return void
+	 */
+	public function setWrapCharacter($wrapCharacter) {
+		$this->wrapCharacter = $wrapCharacter;
+	}
+
 	/**
 	 * This function parses the generated content from TYPO3 and returns an ordered list
 	 * of terms with their related categories.
@@ -44,65 +59,19 @@ class tx_contentreplacer_service_SpanParser extends tx_contentreplacer_service_A
 	 * |-> term1
 	 * ...
 	 *
-	 * Each term has some additional properties:
-	 * - pre: attributes before the class attribute
-	 * - post: attributes after the class attribute
-	 * - classAttribute: the class attribute without the replacement class
-	 *
 	 * @return array
 	 */
 	public function parse() {
-			// fetch terms
 		$matches = array();
 		$prefix = preg_quote($this->extensionConfiguration['prefix'], '/');
-		$pattern = '/' .
-			'<span' . // This expression includes any span nodes and parses
-				'(?=[^>]+' . // any attributes of the beginning start tag.
-					'(?=(class="([^"]*?' . $prefix . '[^"]+?)"))' .
-				')' . // Use only spans which start with the defined class prefix
-			' (.*?)\1(.*?)>' . // and stop if the closing character is reached.
-			'(.*?)<\/span>' . // Finally we fetch the span content!
-			'/is';
+		$char = preg_quote($this->wrapCharacter, '/');
+		$pattern = '/' . $char . $prefix . '([^' . $char . ']+?)' .
+			$char . '([^' . $char . ']+?)' . $char . $char . '/is';
 		preg_match_all($pattern, $GLOBALS['TSFE']->content, $matches);
 
-			// order terms by category
 		$categories = array();
-		foreach ($matches[5] as $index => $term) {
-			$term = trim($term);
-
-				// select the css class with the category (defined by the prefix)
-			$category = '';
-			$classes = explode(' ', $matches[2][$index]);
-			foreach ($classes as $classIndex => $class) {
-				$class = trim($class);
-
-				if (FALSE !== strpos($class, $this->extensionConfiguration['prefix'])) {
-					$category = str_replace($this->extensionConfiguration['prefix'], '', $class);
-					unset($classes[$classIndex]);
-					break;
-				}
-			}
-
-				// error prevention (should never happen)
-			if ($category === '') {
-				t3lib_div::sysLog(
-					'Incorrect match: ' . $classes,
-					'content_replacer',
-					t3lib_div::SYSLOG_SEVERITY_WARNING
-				);
-
-				continue;
-			}
-
-				// add the category/term with some additional information's
-			$categories[$category][$term]['pre'] = $matches[3][$index];
-			$categories[$category][$term]['post'] = $matches[4][$index];
-
-			$categories[$category][$term]['classAttribute'] = '';
-			$otherClasses = implode(' ', $classes);
-			if ($otherClasses !== '') {
-				$categories[$category][$term]['classAttribute'] = 'class="' . $otherClasses . '"';
-			}
+		foreach ($matches[2] as $index => $term) {
+			$categories[trim($matches[1][$index])][trim($term)] = array();
 		}
 
 		return $categories;
@@ -118,6 +87,7 @@ class tx_contentreplacer_service_SpanParser extends tx_contentreplacer_service_A
 	public function replaceByCategory(array $category, array $terms) {
 		$search = $replace = array();
 		$defaultReplacement = $this->prepareFoundTerms($terms);
+		$char = preg_quote($this->wrapCharacter, '/');
 		foreach ($terms as $termName => $term) {
 				// term has no replacement information's -> use default replacement or an empty string
 			if (!isset($term['uid'])) {
@@ -127,13 +97,8 @@ class tx_contentreplacer_service_SpanParser extends tx_contentreplacer_service_A
 
 				// built regular expression for this term
 			$searchClass = preg_quote($this->extensionConfiguration['prefix'] . $category, '/');
-			$search[$termName] = '/' .
-				'<span ' . preg_quote($term['pre'], '/') .
-					'class="([^"]*?)' . $searchClass . '([^"]*?)"' .
-					preg_quote($term['post'], '/') . '>' .
-					'\s*?' . preg_quote($term['term'], '/') . '\s*?' .
-				'<\/span>' .
-			'/i';
+			$search[$termName] = '/' . $char . $searchClass . $char .
+				'\s*?' . preg_quote($term['term'], '/') . '\s*?' . $char . $char . '/i';
 
 				// built replacement text for this term
 			$replace[$termName] = $this->prepareReplacementTerm(
@@ -141,19 +106,10 @@ class tx_contentreplacer_service_SpanParser extends tx_contentreplacer_service_A
 				trim($term['stdWrap']),
 				$termName
 			);
-
-			if (trim($term['pre']) !== '' || trim($term['post']) !== '' || trim($term['classAttribute']) !== '') {
-				$attributes = trim($term['pre'] . ' ' . $term['post'] . ' ' . $term['classAttribute']);
-				$replace[$termName] = '<span ' . $attributes . '>' . $replace[$termName] . '</span>';
-			}
 		}
 
 			// replace all terms by multiple regular expressions
-		$GLOBALS['TSFE']->content = preg_replace(
-			$search,
-			$replace,
-			$GLOBALS['TSFE']->content
-		);
+		$GLOBALS['TSFE']->content = preg_replace($search, $replace, $GLOBALS['TSFE']->content);
 	}
 }
 

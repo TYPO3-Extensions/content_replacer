@@ -122,7 +122,7 @@ class tx_contentreplacer_controller_Main {
 	}
 
 	/**
-	 * Returns the span tag parser
+	 * Returns a span tag parser instance
 	 *
 	 * @return tx_contentreplacer_service_SpanParser
 	 */
@@ -133,6 +133,22 @@ class tx_contentreplacer_controller_Main {
 		$spanParser->injectTermRepository($this->termRepository);
 
 		return $spanParser;
+	}
+
+	/**
+	 * Returns a custom wrap character parser instance
+	 *
+	 * @param string $specialWrapCharacter
+	 * @return tx_contentreplacer_service_CustomParser
+	 */
+	protected function getCustomParser($specialWrapCharacter) {
+		/** @var $spanParser tx_contentreplacer_service_CustomParser */
+		$customParser = t3lib_div::makeInstance('tx_contentreplacer_service_CustomParser');
+		$customParser->setExtensionConfiguration($this->extensionConfiguration);
+		$customParser->injectTermRepository($this->termRepository);
+		$customParser->setWrapCharacter($specialWrapCharacter);
+
+		return $customParser;
 	}
 
 	/**
@@ -172,6 +188,12 @@ class tx_contentreplacer_controller_Main {
 	protected function main() {
 		$spanParser = $this->getSpanParser();
 		$this->parseAndReplace($spanParser);
+
+		$specialWrapCharacter = trim($this->extensionConfiguration['specialParserCharacter']);
+		if ($specialWrapCharacter !== '') {
+			$customParser = $this->getCustomParser($specialWrapCharacter);
+			$this->parseAndReplace($customParser);
+		}
 	}
 }
 

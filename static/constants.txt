@@ -7,4 +7,7 @@ plugin.tx_content_replacer {
 
 	# cat=plugin.tx_content_replacer//a; type=text; label= Class Prefix: The class prefix for the replace tags which should be substituted.
 	prefix = replace-
+
+	# cat=plugin.tx_content_replacer//a; type=text; label= Special Parsing Wrap Character: If you want an own special non-html wrap, you can define the character. E.g. if you set ~ as character, the following wrap is possible: ~replace-category~term~~
+	specialParserCharacter =
 }
