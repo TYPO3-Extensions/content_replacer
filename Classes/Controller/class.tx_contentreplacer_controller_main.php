@@ -39,13 +39,6 @@ class tx_contentreplacer_controller_Main {
 	protected $extensionConfiguration = array();
 
 	/**
-	 * lib.parseFunc_RTE configuration
-	 *
-	 * @var array
-	 */
-	protected $parseFunc = array();
-
-	/**
 	 * @var tx_contentreplacer_repository_Term
 	 */
 	protected $termRepository = NULL;
@@ -58,8 +51,19 @@ class tx_contentreplacer_controller_Main {
 	 * @return void
 	 */
 	public function __construct() {
-		$this->parseFunc = $GLOBALS['TSFE']->tmpl->setup['lib.']['parseFunc_RTE.'];
 		$this->extensionConfiguration = $this->prepareConfiguration();
+		$this->initTermRepository();
+	}
+
+	/**
+	 * Initializes the term repository
+	 *
+	 * @return void
+	 */
+	public function initTermRepository() {
+		/** @var $termRepository tx_contentreplacer_repository_Term */
+		$this->termRepository = t3lib_div::makeInstance('tx_contentreplacer_repository_Term');
+		$this->termRepository->setExtensionConfiguration($this->extensionConfiguration);
 	}
 
 	/**
@@ -118,22 +122,27 @@ class tx_contentreplacer_controller_Main {
 	}
 
 	/**
-	 * Injects the term repository
+	 * Returns the span tag parser
 	 *
-	 * @param tx_contentreplacer_repository_Term $repository
-	 * @return void
+	 * @return tx_contentreplacer_service_SpanParser
 	 */
-	public function injectTermRepository(tx_contentreplacer_repository_Term $repository) {
-		$this->termRepository = $repository;
-		$this->termRepository->setExtensionConfiguration($this->extensionConfiguration);
+	protected function getSpanParser() {
+		/** @var $spanParser tx_contentreplacer_service_SpanParser */
+		$spanParser = t3lib_div::makeInstance('tx_contentreplacer_service_SpanParser');
+		$spanParser->setExtensionConfiguration($this->extensionConfiguration);
+		$spanParser->injectTermRepository($this->termRepository);
+
+		return $spanParser;
 	}
 
 	/**
-	 * Controlling code
+	 * Parses and replaces the content several times until the given parser cannot find
+	 * any more occurences or the maximum amount of possible passes is reached.
 	 *
+	 * @param tx_contentreplacer_service_AbstractParser $parser
 	 * @return void
 	 */
-	protected function main() {
+	protected function parseAndReplace(tx_contentreplacer_service_AbstractParser $parser) {
 		$loopCounter = 0;
 		while (TRUE) {
 				// recursion check to prevent endless loops
@@ -143,190 +152,26 @@ class tx_contentreplacer_controller_Main {
 			}
 
 				// no further occurrences  => break the loop to save performance
-			$occurences = $this->parseContent();
+			$occurences = $parser->parse();
 			if (!count($occurences)) {
 				break;
 			}
 
 				// replace the terms category by category
 			foreach ($occurences as $category => $terms) {
-				$this->replaceTermsByCategory($category, $terms);
+				$parser->replaceByCategory($category, $terms);
 			}
 		}
 	}
 
 	/**
-	 * This function parses the generated content from TYPO3 and returns an ordered list
-	 * of terms with their related categories.
+	 * Controlling code
 	 *
-	 * Structure:
-	 *
-	 * category1
-	 * |-> term1
-	 * |-> term2
-	 * category2
-	 * |-> term1
-	 * ...
-	 *
-	 * Each term has some additional properties:
-	 * - pre: attributes before the class attribute
-	 * - post: attributes after the class attribute
-	 * - classAttribute: the class attribute without the replacement class
-	 *
-	 * @return array
-	 */
-	protected function parseContent() {
-			// fetch terms
-		$matches = array();
-		$prefix = preg_quote($this->extensionConfiguration['prefix'], '/');
-		$pattern = '/' .
-			'<span' . // This expression includes any span nodes and parses
-				'(?=[^>]+' . // any attributes of the beginning start tag.
-					'(?=(class="([^"]*?' . $prefix . '[^"]+?)"))' .
-				')' . // Use only spans which start with the defined class prefix
-			' (.*?)\1(.*?)>' . // and stop if the closing character is reached.
-			'(.*?)<\/span>' . // Finally we fetch the span content!
-			'/is';
-		preg_match_all($pattern, $GLOBALS['TSFE']->content, $matches);
-
-			// order terms by category
-		$categories = array();
-		foreach ($matches[5] as $index => $term) {
-			$term = trim($term);
-
-				// select the css class with the category (defined by the prefix)
-			$category = '';
-			$classes = explode(' ', $matches[2][$index]);
-			foreach ($classes as $classIndex => $class) {
-				$class = trim($class);
-
-				if (FALSE !== strpos($class, $this->extensionConfiguration['prefix'])) {
-					$category = str_replace($this->extensionConfiguration['prefix'], '', $class);
-					unset($classes[$classIndex]);
-					break;
-				}
-			}
-
-				// error prevention (should never happen)
-			if ($category === '') {
-				t3lib_div::sysLog(
-					'Incorrect match: ' . $classes,
-					'content_replacer',
-					t3lib_div::SYSLOG_SEVERITY_WARNING
-				);
-
-				continue;
-			}
-
-				// add the category/term with some additional information's
-			$categories[$category][$term]['pre'] = $matches[3][$index];
-			$categories[$category][$term]['post'] = $matches[4][$index];
-
-			$categories[$category][$term]['classAttribute'] = '';
-			$otherClasses = implode(' ', $classes);
-			if ($otherClasses !== '') {
-				$categories[$category][$term]['classAttribute'] = 'class="' . $otherClasses . '"';
-			}
-		}
-
-		return $categories;
-	}
-
-	/**
-	 * Replaces the given terms with their related replacement values.
-	 *
-	 * @see parseContent() for the array structure
-	 * @param $category array
-	 * @param $terms array
 	 * @return void
 	 */
-	protected function replaceTermsByCategory($category, $replacementTerms) {
-			// fetch term information's
-		$replacementTerms['*'] = array();
-		$terms = array_keys($replacementTerms);
-		$terms = array_merge_recursive(
-			$replacementTerms,
-			$this->fetchTerms($terms, $category)
-		);
-
-			// if the wildcard term was defined for the category, then we use it
-			// as the default replacement object
-		$defaultReplacement = '';
-		if (is_array($terms['*'])) {
-			$defaultReplacement = $terms['*'];
-		}
-		unset($terms['*']);
-
-			// loop terms
-		$search = $replace = array();
-		foreach ($terms as $termName => $term) {
-				// if the term wasn't defined in the database, we are using the default
-				// replacement object (wildcard term or an empty string)
-			if (!isset($term['uid'])) {
-				$term = array_merge((array)$term, $defaultReplacement);
-				$term['term'] = $termName;
-			}
-
-				// built regular expression for this term
-			$searchClass = preg_quote($this->extensionConfiguration['prefix'] . $category, '/');
-			$search[$termName] = '/' .
-				'<span ' . preg_quote($term['pre'], '/') .
-					'class="([^"]*?)' . $searchClass . '([^"]*?)"' .
-					preg_quote($term['post'], '/') . '>' .
-					'\s*?' . preg_quote($term['term'], '/') . '\s*?' .
-				'<\/span>' .
-			'/i';
-
-				// built replacement text for this term
-			$replace[$termName] = $this->prepareTermReplacement(
-				$term['replacement'],
-				trim($term['stdWrap']),
-				$termName
-			);
-
-			if (trim($term['pre']) !== '' || trim($term['post']) !== '' || trim($term['classAttribute']) !== '') {
-				$attributes = trim($term['pre'] . ' ' . $term['post'] . ' ' . $term['classAttribute']);
-				$replace[$termName] = '<span ' . $attributes . '>' . $replace[$termName] . '</span>';
-			}
-		}
-
-			// replace all terms by multiple regular expressions
-		$GLOBALS['TSFE']->content = preg_replace(
-			$search,
-			$replace,
-			$GLOBALS['TSFE']->content
-		);
-	}
-
-	/**
-	 * Prepares a replacement value by applying the possible stdWrap and executing RTE
-	 * transformations. The stdWrap typoscript object must be defined inside the extension
-	 * namespace "plugin.tx_content_replacer".
-	 *
-	 * Note: If the replacement text is empty, we pass the term name as the initial content of the
-	 * stdWrap object.
-	 *
-	 * @param $replacement string
-	 * @param $stdWrap string
-	 * @param $termName string
-	 * @return string
-	 */
-	protected function prepareTermReplacement($replacement, $stdWrap, $termName) {
-			// rte transformation (the surrounding p tags are removed afterwards)
-		if ($replacement !== '') {
-			$replacement = $GLOBALS['TSFE']->cObj->parseFunc($replacement, $this->parseFunc);
-			$replacement = preg_replace('/^<p>(.+)<\/p>$/s', '\1', $replacement);
-		}
-
-			// stdWrap transformation
-		if ($stdWrap !== '') {
-			$replacement = $GLOBALS['TSFE']->cObj->stdWrap(
-				($replacement === '' ? $termName : $replacement),
-				$GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_content_replacer.'][$stdWrap . '.']
-			);
-		}
-
-		return $replacement;
+	protected function main() {
+		$spanParser = $this->getSpanParser();
+		$this->parseAndReplace($spanParser);
 	}
 }
 

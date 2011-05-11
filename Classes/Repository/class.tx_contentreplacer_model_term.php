@@ -49,11 +49,11 @@ class tx_contentreplacer_repository_Term {
 	/**
 	 * Returns the given terms with their related information's.
 	 *
-	 * @param $filterTerms array
-	 * @param $category string
+	 * @param array $filterTerms
+	 * @param string $category
 	 * @return array
 	 */
-	protected function fetchTerms($filterTerms, $category) {
+	public function fetchTerms(array $filterTerms, $category) {
 		$category = $GLOBALS['TYPO3_DB']->fullQuoteStr(
 			$category,
 			'tx_content_replacer_category'
