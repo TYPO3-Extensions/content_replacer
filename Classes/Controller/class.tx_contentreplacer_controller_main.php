@@ -142,7 +142,7 @@ class tx_contentreplacer_controller_Main {
 	 * @return tx_contentreplacer_service_CustomParser
 	 */
 	protected function getCustomParser($specialWrapCharacter) {
-		/** @var $spanParser tx_contentreplacer_service_CustomParser */
+		/** @var $customParser tx_contentreplacer_service_CustomParser */
 		$customParser = t3lib_div::makeInstance('tx_contentreplacer_service_CustomParser');
 		$customParser->setExtensionConfiguration($this->extensionConfiguration);
 		$customParser->injectTermRepository($this->termRepository);

@@ -118,13 +118,14 @@ abstract class tx_contentreplacer_service_AbstractParser {
 	 * term for any replacements.
 	 *
 	 * @param array $terms
+	 * @param string $category
 	 * @return string
 	 */
-	protected function prepareFoundTerms(array &$terms) {
-		$replacementTerms['*'] = array();
-		$terms = array_keys($replacementTerms);
-		$configuredTerms = $this->termRepository->fetchTerms($terms, $category);
-		$terms = array_merge_recursive($replacementTerms, $configuredTerms);
+	protected function prepareFoundTerms(array &$terms, $category) {
+		$terms['*'] = array();
+		$termNames = array_keys($terms);
+		$configuredTerms = $this->termRepository->fetchTerms($termNames, $category);
+		$terms = array_merge_recursive($terms, $configuredTerms);
 
 			// define default replacement if no other term replacement is available
 		$defaultReplacement = (is_array($terms['*']) ? $terms['*'] : '');
@@ -146,11 +147,11 @@ abstract class tx_contentreplacer_service_AbstractParser {
 	 * Replaces the given terms with their related replacement values.
 	 *
 	 * @abstract
-	 * @param array $category
+	 * @param string $category
 	 * @param array $terms
 	 * @return void
 	 */
-	abstract public function replaceByCategory(array $category, array $terms);
+	abstract public function replaceByCategory($category, array $terms);
 }
 
 if (defined('TYPO3_MODE') && $GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/content_replacer/Classes/Service/class.tx_contentreplacer_service_AbstractParser.php']) {

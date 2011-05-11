@@ -80,13 +80,13 @@ class tx_contentreplacer_service_CustomParser extends tx_contentreplacer_service
 	/**
 	 * Replaces the given terms with their related replacement values.
 	 *
-	 * @param array $category
+	 * @param string $category
 	 * @param array $terms
 	 * @return void
 	 */
-	public function replaceByCategory(array $category, array $terms) {
+	public function replaceByCategory($category, array $terms) {
 		$search = $replace = array();
-		$defaultReplacement = $this->prepareFoundTerms($terms);
+		$defaultReplacement = $this->prepareFoundTerms($terms, $category);
 		$char = preg_quote($this->wrapCharacter, '/');
 		foreach ($terms as $termName => $term) {
 				// term has no replacement information's -> use default replacement or an empty string
