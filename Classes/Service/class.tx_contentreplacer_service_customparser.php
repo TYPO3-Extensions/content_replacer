@@ -66,7 +66,7 @@ class tx_contentreplacer_service_CustomParser extends tx_contentreplacer_service
 		$prefix = preg_quote($this->extensionConfiguration['prefix'], '/');
 		$char = preg_quote($this->wrapCharacter, '/');
 		$pattern = '/' . $char . $prefix . '([^' . $char . ']+?)' .
-			$char . '([^' . $char . ']+?)' . $char . $char . '/is';
+			$char . '(.+?)' . $char . $char . '/is';
 		preg_match_all($pattern, $GLOBALS['TSFE']->content, $matches);
 
 		$categories = array();
