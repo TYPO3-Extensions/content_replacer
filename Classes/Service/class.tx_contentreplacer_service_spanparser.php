@@ -76,6 +76,7 @@ class tx_contentreplacer_service_SpanParser extends tx_contentreplacer_service_A
 			foreach ($classes as $classIndex => $class) {
 				$class = trim($class);
 
+					// empty prefix === no category === no replacement
 				if (FALSE !== strpos($class, $this->extensionConfiguration['prefix'])) {
 					$category = str_replace($this->extensionConfiguration['prefix'], '', $class);
 					unset($classes[$classIndex]);
