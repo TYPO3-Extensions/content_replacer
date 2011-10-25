@@ -77,7 +77,6 @@ abstract class tx_contentreplacer_service_AbstractParser {
 	 */
 	public function injectTermRepository(tx_contentreplacer_repository_Term $repository) {
 		$this->termRepository = $repository;
-		$this->termRepository->setExtensionConfiguration($this->extensionConfiguration);
 	}
 
 	/**
@@ -94,13 +93,11 @@ abstract class tx_contentreplacer_service_AbstractParser {
 	 * @return string
 	 */
 	protected function prepareReplacementTerm($replacement, $stdWrap, $termName) {
-			// rte transformation (the surrounding p tags are removed afterwards)
 		if ($replacement !== '') {
 			$replacement = $GLOBALS['TSFE']->cObj->parseFunc($replacement, $this->parseFunc);
 			$replacement = preg_replace('/^<p>(.+)<\/p>$/s', '\1', $replacement);
 		}
 
-			// stdWrap transformation
 		if ($stdWrap !== '') {
 			$replacement = $GLOBALS['TSFE']->cObj->stdWrap(
 				($replacement === '' ? $termName : $replacement),
@@ -125,7 +122,6 @@ abstract class tx_contentreplacer_service_AbstractParser {
 		$configuredTerms = $this->termRepository->fetchTerms($termNames, $category);
 		$terms = array_merge_recursive($terms, $configuredTerms);
 
-			// define default replacement if no other term replacement is available
 		$defaultReplacement = (is_array($terms['*']) ? $terms['*'] : '');
 		unset($terms['*']);
 

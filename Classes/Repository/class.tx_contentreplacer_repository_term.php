@@ -32,21 +32,6 @@
  */
 class tx_contentreplacer_repository_Term {
 	/**
-	 * @var array
-	 */
-	protected $extensionConfiguration = array();
-
-	/**
-	 * Sets the extension configuration
-	 *
-	 * @param array $extensionConfiguration
-	 * @return void
-	 */
-	public function setExtensionConfiguration(array $extensionConfiguration) {
-		$this->extensionConfiguration = $extensionConfiguration;
-	}
-
-	/**
 	 * Returns the given terms with their related information's.
 	 *
 	 * @param array $filterTerms
@@ -54,20 +39,12 @@ class tx_contentreplacer_repository_Term {
 	 * @return array
 	 */
 	public function fetchTerms(array $filterTerms, $category) {
-		$category = $GLOBALS['TYPO3_DB']->fullQuoteStr(
-			$category,
-			'tx_content_replacer_category'
-		);
-
 		$termsWhereClause = array();
+		$category = $GLOBALS['TYPO3_DB']->fullQuoteStr($category, 'tx_content_replacer_category');
 		foreach ($filterTerms as $term) {
-			$termsWhereClause[] = $GLOBALS['TYPO3_DB']->fullQuoteStr(
-				trim($term),
-				'tx_content_replacer_term'
-			);
+			$termsWhereClause[] = $GLOBALS['TYPO3_DB']->fullQuoteStr(trim($term), 'tx_content_replacer_term');
 		}
 
-		$GLOBALS['TYPO3_DB']->debugOutput = FALSE;
 		$queryResource = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
 			'tx_content_replacer_term.uid, tx_content_replacer_term.pid, ' .
 				'term, replacement, stdWrap, category_uid, sys_language_uid',
@@ -79,17 +56,9 @@ class tx_contentreplacer_repository_Term {
 				$GLOBALS['TSFE']->cObj->enableFields('tx_content_replacer_category')
 		);
 
-			// define language mode
-		if ($this->extensionConfiguration['sysLanguageMode'] === 'normal') {
-			$languageMode = $GLOBALS['TSFE']->sys_language_content;
-			$overlayMode = $GLOBALS['TSFE']->sys_language_contentOL;
-		} else {
-			$languageMode = $GLOBALS['TSFE']->sys_language_uid;
-			$overlayMode = 'hideNonTranslated';
-		}
-
-			// overlay record with an other language if required
 		$terms = array();
+		$languageMode = $GLOBALS['TSFE']->sys_language_uid;
+		$overlayMode = $GLOBALS['TSFE']->sys_language_contentOL;
 		while ($term = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($queryResource)) {
 			if ($languageMode) {
 				$term = $GLOBALS['TSFE']->sys_page->getRecordOverlay(

@@ -50,18 +50,7 @@ class tx_contentreplacer_controller_Main {
 	 */
 	public function __construct() {
 		$this->extensionConfiguration = $this->prepareConfiguration();
-		$this->initTermRepository();
-	}
-
-	/**
-	 * Initializes the term repository
-	 *
-	 * @return void
-	 */
-	public function initTermRepository() {
-		/** @var $termRepository tx_contentreplacer_repository_Term */
 		$this->termRepository = t3lib_div::makeInstance('tx_contentreplacer_repository_Term');
-		$this->termRepository->setExtensionConfiguration($this->extensionConfiguration);
 	}
 
 	/**
@@ -160,19 +149,15 @@ class tx_contentreplacer_controller_Main {
 	protected function parseAndReplace(tx_contentreplacer_service_AbstractParser $parser, $content) {
 		$loopCounter = 0;
 		while (TRUE) {
-				// check to prevent endless loops
-			++$loopCounter;
-			if ($loopCounter > $this->extensionConfiguration['amountOfPasses']) {
+			if ($loopCounter++ > $this->extensionConfiguration['amountOfPasses']) {
 				break;
 			}
 
-				// no further occurrences  => break the loop to save performance
 			$occurences = $parser->parse($content);
 			if (!count($occurences)) {
 				break;
 			}
 
-				// replace the terms category by category
 			foreach ($occurences as $category => $terms) {
 				$content = $parser->replaceByCategory($category, $terms, $content);
 			}

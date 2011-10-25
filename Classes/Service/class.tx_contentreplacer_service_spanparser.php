@@ -53,7 +53,6 @@ class tx_contentreplacer_service_SpanParser extends tx_contentreplacer_service_A
 	 * @return array
 	 */
 	public function parse($content) {
-			// fetch terms
 		$matches = array();
 		$prefix = preg_quote($this->extensionConfiguration['prefix'], '/');
 		$pattern = '/' .
@@ -66,18 +65,15 @@ class tx_contentreplacer_service_SpanParser extends tx_contentreplacer_service_A
 			'/is';
 		preg_match_all($pattern, $content, $matches);
 
-			// order terms by category
 		$categories = array();
 		foreach ($matches[5] as $index => $term) {
 			$term = trim($term);
 
-				// select the css class with the category (defined by the prefix)
 			$category = '';
 			$classes = explode(' ', $matches[2][$index]);
 			foreach ($classes as $classIndex => $class) {
 				$class = trim($class);
 
-					// empty prefix === no category === no replacement
 				if (FALSE !== strpos($class, $this->extensionConfiguration['prefix'])) {
 					$category = str_replace($this->extensionConfiguration['prefix'], '', $class);
 					unset($classes[$classIndex]);
@@ -85,7 +81,6 @@ class tx_contentreplacer_service_SpanParser extends tx_contentreplacer_service_A
 				}
 			}
 
-				// error prevention (should never happen)
 			if ($category === '') {
 				t3lib_div::sysLog(
 					'Incorrect match: ' . $classes,
@@ -96,7 +91,6 @@ class tx_contentreplacer_service_SpanParser extends tx_contentreplacer_service_A
 				continue;
 			}
 
-				// add the category/term with some additional information's
 			$categories[$category][$term]['pre'] = $matches[3][$index];
 			$categories[$category][$term]['post'] = $matches[4][$index];
 
@@ -122,13 +116,11 @@ class tx_contentreplacer_service_SpanParser extends tx_contentreplacer_service_A
 		$search = $replace = array();
 		$defaultReplacement = $this->prepareFoundTerms($terms, $category);
 		foreach ($terms as $termName => $term) {
-				// term has no replacement information's -> use default replacement or an empty string
 			if (!isset($term['uid'])) {
 				$term = array_merge((array) $term, $defaultReplacement);
 				$term['term'] = $termName;
 			}
 
-				// built regular expression for this term
 			$searchClass = preg_quote($this->extensionConfiguration['prefix'] . $category, '/');
 			$search[$termName] = '/' .
 				'<span ' . preg_quote($term['pre'], '/') .
@@ -138,7 +130,6 @@ class tx_contentreplacer_service_SpanParser extends tx_contentreplacer_service_A
 				'<\/span>' .
 				'/i';
 
-				// built replacement text for this term
 			$replace[$termName] = $this->prepareReplacementTerm(
 				$term['replacement'],
 				trim($term['stdWrap']),
@@ -151,7 +142,6 @@ class tx_contentreplacer_service_SpanParser extends tx_contentreplacer_service_A
 			}
 		}
 
-			// replace all terms by multiple regular expressions
 		return preg_replace($search, $replace, $content);
 	}
 }

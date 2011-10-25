@@ -91,18 +91,15 @@ class tx_contentreplacer_service_CustomParser extends tx_contentreplacer_service
 		$defaultReplacement = $this->prepareFoundTerms($terms, $category);
 		$char = preg_quote($this->wrapCharacter, '/');
 		foreach ($terms as $termName => $term) {
-				// term has no replacement information's -> use default replacement or an empty string
 			if (!isset($term['uid'])) {
 				$term = array_merge((array) $term, $defaultReplacement);
 				$term['term'] = $termName;
 			}
 
-				// built regular expression for this term
 			$searchClass = preg_quote($this->extensionConfiguration['prefix'] . $category, '/');
 			$search[$termName] = '/' . $char . $searchClass . $char .
 				'\s*?' . preg_quote($term['term'], '/') . '\s*?' . $char . $char . '/i';
 
-				// built replacement text for this term
 			$replace[$termName] = $this->prepareReplacementTerm(
 				$term['replacement'],
 				trim($term['stdWrap']),
@@ -110,7 +107,6 @@ class tx_contentreplacer_service_CustomParser extends tx_contentreplacer_service
 			);
 		}
 
-			// replace all terms by multiple regular expressions
 		return preg_replace($search, $replace, $content);
 	}
 }

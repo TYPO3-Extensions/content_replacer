@@ -1,2 +1,0 @@
-# cat=basic/; type=options[normal=normal, strict=strict]; label=Language Fallback Modus: The normal option causes the extension to use your global TYPO3 language settings. You can select strict to ignore them totally and to require a translation.
-sysLanguageMode = strict
