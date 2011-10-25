@@ -124,7 +124,7 @@ class tx_contentreplacer_service_SpanParser extends tx_contentreplacer_service_A
 		foreach ($terms as $termName => $term) {
 				// term has no replacement information's -> use default replacement or an empty string
 			if (!isset($term['uid'])) {
-				$term = array_merge((array)$term, $defaultReplacement);
+				$term = array_merge((array) $term, $defaultReplacement);
 				$term['term'] = $termName;
 			}
 
@@ -136,7 +136,7 @@ class tx_contentreplacer_service_SpanParser extends tx_contentreplacer_service_A
 					preg_quote($term['post'], '/') . '>' .
 					'\s*?' . preg_quote($term['term'], '/') . '\s*?' .
 				'<\/span>' .
-			'/i';
+				'/i';
 
 				// built replacement text for this term
 			$replace[$termName] = $this->prepareReplacementTerm(

@@ -93,7 +93,7 @@ class tx_contentreplacer_service_CustomParser extends tx_contentreplacer_service
 		foreach ($terms as $termName => $term) {
 				// term has no replacement information's -> use default replacement or an empty string
 			if (!isset($term['uid'])) {
-				$term = array_merge((array)$term, $defaultReplacement);
+				$term = array_merge((array) $term, $defaultReplacement);
 				$term['term'] = $termName;
 			}
 

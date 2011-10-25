@@ -4,6 +4,7 @@ if (!defined('TYPO3_MODE')) {
 	die ('Access denied.');
 }
 
+/** @var $TCA array */
 $TCA['tx_content_replacer_term'] = array(
 	'ctrl' => $TCA['tx_content_replacer_term']['ctrl'],
 	'interface' => array(

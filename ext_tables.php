@@ -1,9 +1,10 @@
 <?php
 
 if (!defined('TYPO3_MODE')) {
-	die ('Access denied.');
+	die('Access denied.');
 }
 
+/** @var $_EXTKEY string */
 t3lib_extMgm::addStaticFile($_EXTKEY, 'static/', 'Content Replacer');
 
 t3lib_extMgm::allowTableOnStandardPages('tx_content_replacer_term');

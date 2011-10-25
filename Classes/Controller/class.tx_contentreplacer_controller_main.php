@@ -47,8 +47,6 @@ class tx_contentreplacer_controller_Main {
 	 * Constructor: Initializes the internal class properties.
 	 *
 	 * Note: The extension configuration array consists of the global and typoscript configuration.
-	 *
-	 * @return void
 	 */
 	public function __construct() {
 		$this->extensionConfiguration = $this->prepareConfiguration();
