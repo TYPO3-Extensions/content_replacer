@@ -12,7 +12,7 @@
 
 $EM_CONF[$_EXTKEY] = array(
 	'title' => 'Content Replacer',
-	'description' => 'You need a fast substitution of terms with full support of typoscript, categories and RTE integration? If yes, the extension could be perfectly fit into your project. The performance is gained by some manual work in the content by wrapping the replacement terms.',
+	'description' => 'You need a fast substitution of terms with full support of typoscript, categories and RTE integration? If yes, the extension could be perfectly fit into your project. The performance is gained by wrapping of the replacement terms to simplify the parsing process.',
 	'category' => 'fe',
 	'shy' => 0,
 	'version' => '1.5.1',
@@ -34,7 +34,7 @@ $EM_CONF[$_EXTKEY] = array(
 	'CGLcompliance_note' => '',
 	'constraints' => array(
 		'depends' => array(
-			'typo3' => '4.4.0-4.5.99',
+			'typo3' => '4.4.0-4.6.99',
 			'php' => '5.2.0-5.3.99',
 		),
 		'conflicts' => array(
