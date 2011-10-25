@@ -102,7 +102,7 @@ class tx_contentreplacer_controller_Main {
 			return;
 		}
 
-		$this->main();
+		$GLOBALS['TSFE']->content = $this->main($GLOBALS['TSFE']->content);
 	}
 
 	/**
@@ -118,7 +118,7 @@ class tx_contentreplacer_controller_Main {
 			return;
 		}
 
-		$this->main();
+		$GLOBALS['TSFE']->content = $this->main($GLOBALS['TSFE']->content);
 	}
 
 	/**
@@ -156,44 +156,50 @@ class tx_contentreplacer_controller_Main {
 	 * any more occurences or the maximum amount of possible passes is reached.
 	 *
 	 * @param tx_contentreplacer_service_AbstractParser $parser
-	 * @return void
+	 * @param string $content
+	 * @return string
 	 */
-	protected function parseAndReplace(tx_contentreplacer_service_AbstractParser $parser) {
+	protected function parseAndReplace(tx_contentreplacer_service_AbstractParser $parser, $content) {
 		$loopCounter = 0;
 		while (TRUE) {
-				// recursion check to prevent endless loops
+				// check to prevent endless loops
 			++$loopCounter;
 			if ($loopCounter > $this->extensionConfiguration['amountOfPasses']) {
 				break;
 			}
 
 				// no further occurrences  => break the loop to save performance
-			$occurences = $parser->parse();
+			$occurences = $parser->parse($content);
 			if (!count($occurences)) {
 				break;
 			}
 
 				// replace the terms category by category
 			foreach ($occurences as $category => $terms) {
-				$parser->replaceByCategory($category, $terms);
+				$content = $parser->replaceByCategory($category, $terms, $content);
 			}
 		}
+
+		return $content;
 	}
 
 	/**
 	 * Controlling code
 	 *
-	 * @return void
+	 * @param string $content
+	 * @return string
 	 */
-	protected function main() {
+	public function main($content) {
 		$spanParser = $this->getSpanParser();
-		$this->parseAndReplace($spanParser);
+		$content = $this->parseAndReplace($spanParser, $content);
 
 		$specialWrapCharacter = trim($this->extensionConfiguration['specialParserCharacter']);
 		if ($specialWrapCharacter !== '') {
 			$customParser = $this->getCustomParser($specialWrapCharacter);
-			$this->parseAndReplace($customParser);
+			$content = $this->parseAndReplace($customParser, $content);
 		}
+
+		return $content;
 	}
 }
 

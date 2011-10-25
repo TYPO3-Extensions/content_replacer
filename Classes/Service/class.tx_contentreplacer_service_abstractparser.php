@@ -139,9 +139,10 @@ abstract class tx_contentreplacer_service_AbstractParser {
 	 * of terms with their related categories.
 	 *
 	 * @abstract
+	 * @param string $content
 	 * @return array
 	 */
-	abstract public function parse();
+	abstract public function parse($content);
 
 	/**
 	 * Replaces the given terms with their related replacement values.
@@ -149,9 +150,10 @@ abstract class tx_contentreplacer_service_AbstractParser {
 	 * @abstract
 	 * @param string $category
 	 * @param array $terms
-	 * @return void
+	 * @param string $content
+	 * @return string
 	 */
-	abstract public function replaceByCategory($category, array $terms);
+	abstract public function replaceByCategory($category, array $terms, $content);
 }
 
 if (defined('TYPO3_MODE') && $GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/content_replacer/Classes/Service/class.tx_contentreplacer_service_AbstractParser.php']) {

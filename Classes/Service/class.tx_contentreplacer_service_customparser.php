@@ -59,15 +59,16 @@ class tx_contentreplacer_service_CustomParser extends tx_contentreplacer_service
 	 * |-> term1
 	 * ...
 	 *
+	 * @param string $content
 	 * @return array
 	 */
-	public function parse() {
+	public function parse($content) {
 		$matches = array();
 		$prefix = preg_quote($this->extensionConfiguration['prefix'], '/');
 		$char = preg_quote($this->wrapCharacter, '/');
 		$pattern = '/' . $char . $prefix . '([^' . $char . ']+?)' .
 			$char . '(.+?)' . $char . $char . '/is';
-		preg_match_all($pattern, $GLOBALS['TSFE']->content, $matches);
+		preg_match_all($pattern, $content, $matches);
 
 		$categories = array();
 		foreach ($matches[2] as $index => $term) {
@@ -82,9 +83,10 @@ class tx_contentreplacer_service_CustomParser extends tx_contentreplacer_service
 	 *
 	 * @param string $category
 	 * @param array $terms
-	 * @return void
+	 * @param string $content
+	 * @return string
 	 */
-	public function replaceByCategory($category, array $terms) {
+	public function replaceByCategory($category, array $terms, $content) {
 		$search = $replace = array();
 		$defaultReplacement = $this->prepareFoundTerms($terms, $category);
 		$char = preg_quote($this->wrapCharacter, '/');
@@ -109,7 +111,7 @@ class tx_contentreplacer_service_CustomParser extends tx_contentreplacer_service
 		}
 
 			// replace all terms by multiple regular expressions
-		$GLOBALS['TSFE']->content = preg_replace($search, $replace, $GLOBALS['TSFE']->content);
+		return preg_replace($search, $replace, $content);
 	}
 }
 

@@ -49,9 +49,10 @@ class tx_contentreplacer_service_SpanParser extends tx_contentreplacer_service_A
 	 * - post: attributes after the class attribute
 	 * - classAttribute: the class attribute without the replacement class
 	 *
+	 * @param string $content
 	 * @return array
 	 */
-	public function parse() {
+	public function parse($content) {
 			// fetch terms
 		$matches = array();
 		$prefix = preg_quote($this->extensionConfiguration['prefix'], '/');
@@ -63,7 +64,7 @@ class tx_contentreplacer_service_SpanParser extends tx_contentreplacer_service_A
 			' (.*?)\1(.*?)>' . // and stop if the closing character is reached.
 			'(.*?)<\/span>' . // Finally we fetch the span content!
 			'/is';
-		preg_match_all($pattern, $GLOBALS['TSFE']->content, $matches);
+		preg_match_all($pattern, $content, $matches);
 
 			// order terms by category
 		$categories = array();
@@ -114,9 +115,10 @@ class tx_contentreplacer_service_SpanParser extends tx_contentreplacer_service_A
 	 *
 	 * @param string $category
 	 * @param array $terms
-	 * @return void
+	 * @param string $content
+	 * @return string
 	 */
-	public function replaceByCategory($category, array $terms) {
+	public function replaceByCategory($category, array $terms, $content) {
 		$search = $replace = array();
 		$defaultReplacement = $this->prepareFoundTerms($terms, $category);
 		foreach ($terms as $termName => $term) {
@@ -150,11 +152,7 @@ class tx_contentreplacer_service_SpanParser extends tx_contentreplacer_service_A
 		}
 
 			// replace all terms by multiple regular expressions
-		$GLOBALS['TSFE']->content = preg_replace(
-			$search,
-			$replace,
-			$GLOBALS['TSFE']->content
-		);
+		return preg_replace($search, $replace, $content);
 	}
 }
 
