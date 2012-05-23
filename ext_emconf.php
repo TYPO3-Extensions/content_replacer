@@ -3,7 +3,7 @@
 ########################################################################
 # Extension Manager/Repository config file for ext "content_replacer".
 #
-# Auto generated 24-11-2011 19:56
+# Auto generated 23-05-2012 12:38
 #
 # Manual updates:
 # Only the data in the array - everything else is removed by next
@@ -15,7 +15,7 @@ $EM_CONF[$_EXTKEY] = array(
 	'description' => 'You need a fast substitution of terms with full support of typoscript, categories and RTE integration? If yes, the extension could be perfectly fit into your project. The performance is gained by wrapping of the replacement terms to simplify the parsing process.',
 	'category' => 'fe',
 	'shy' => 0,
-	'version' => '2.0.1',
+	'version' => '2.0.2',
 	'dependencies' => '',
 	'conflicts' => '',
 	'priority' => '',
