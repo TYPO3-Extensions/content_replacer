@@ -39,13 +39,16 @@ class tx_contentreplacer_repository_Term {
 	 * @return array
 	 */
 	public function fetchTerms(array $filterTerms, $category) {
+		/** @var t3lib_DB $database */
+		$database = $GLOBALS['TYPO3_DB'];
+
 		$termsWhereClause = array();
-		$category = $GLOBALS['TYPO3_DB']->fullQuoteStr($category, 'tx_content_replacer_category');
+		$category = $database->fullQuoteStr($category, 'tx_content_replacer_category');
 		foreach ($filterTerms as $term) {
-			$termsWhereClause[] = $GLOBALS['TYPO3_DB']->fullQuoteStr(trim($term), 'tx_content_replacer_term');
+			$termsWhereClause[] = $database->fullQuoteStr(trim($term), 'tx_content_replacer_term');
 		}
 
-		$queryResource = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
+		$queryResource = $database->exec_SELECTquery(
 			'tx_content_replacer_term.uid, tx_content_replacer_term.pid, ' .
 				'term, replacement, stdWrap, category_uid, sys_language_uid',
 			'tx_content_replacer_term, tx_content_replacer_category',
@@ -59,7 +62,7 @@ class tx_contentreplacer_repository_Term {
 		$terms = array();
 		$languageMode = $GLOBALS['TSFE']->sys_language_uid;
 		$overlayMode = $GLOBALS['TSFE']->sys_language_contentOL;
-		while ($term = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($queryResource)) {
+		while ($term = $database->sql_fetch_assoc($queryResource)) {
 			if ($languageMode) {
 				$term = $GLOBALS['TSFE']->sys_page->getRecordOverlay(
 					'tx_content_replacer_term', $term, $languageMode, $overlayMode
@@ -68,7 +71,7 @@ class tx_contentreplacer_repository_Term {
 
 			$terms[$term['term']] = $term;
 		}
-		$GLOBALS['TYPO3_DB']->sql_free_result($queryResource);
+		$database->sql_free_result($queryResource);
 
 		return $terms;
 	}

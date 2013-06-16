@@ -41,7 +41,7 @@ class tx_contentreplacer_controller_Main {
 	/**
 	 * @var tx_contentreplacer_repository_Term
 	 */
-	protected $termRepository = NULL;
+	protected $termRepository;
 
 	/**
 	 * Constructor: Initializes the internal class properties.
@@ -85,7 +85,9 @@ class tx_contentreplacer_controller_Main {
 	 * @return void
 	 */
 	public function contentPostProcOutput() {
-		if (!$GLOBALS['TSFE']->isINTincScript() || $this->extensionConfiguration['disable']) {
+		/** @var tslib_fe $tsfe */
+		$tsfe = $GLOBALS['TSFE'];
+		if (!$tsfe->isINTincScript() || $this->extensionConfiguration['disable']) {
 			return;
 		}
 
@@ -101,7 +103,9 @@ class tx_contentreplacer_controller_Main {
 	 * @return void
 	 */
 	public function contentPostProcAll() {
-		if ($GLOBALS['TSFE']->isINTincScript() || $this->extensionConfiguration['disable']) {
+		/** @var tslib_fe $tsfe */
+		$tsfe = $GLOBALS['TSFE'];
+		if ($tsfe->isINTincScript() || $this->extensionConfiguration['disable']) {
 			return;
 		}
 
