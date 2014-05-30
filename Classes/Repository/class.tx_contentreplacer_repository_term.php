@@ -50,13 +50,13 @@ class tx_contentreplacer_repository_Term {
 
 		$queryResource = $database->exec_SELECTquery(
 			'tx_content_replacer_term.uid, tx_content_replacer_term.pid, ' .
-				'term, replacement, stdWrap, category_uid, sys_language_uid',
+			'term, replacement, stdWrap, category_uid, sys_language_uid',
 			'tx_content_replacer_term, tx_content_replacer_category',
 			'term IN (' . implode(', ', $termsWhereClause) . ') AND ' .
-				'sys_language_uid IN (-1, 0) AND category = ' . $category . ' AND ' .
-				'tx_content_replacer_category.uid = category_uid ' .
-				$GLOBALS['TSFE']->cObj->enableFields('tx_content_replacer_term') . ' ' .
-				$GLOBALS['TSFE']->cObj->enableFields('tx_content_replacer_category')
+			'sys_language_uid IN (-1, 0) AND category = ' . $category . ' AND ' .
+			'tx_content_replacer_category.uid = category_uid ' .
+			$GLOBALS['TSFE']->cObj->enableFields('tx_content_replacer_term') . ' ' .
+			$GLOBALS['TSFE']->cObj->enableFields('tx_content_replacer_category')
 		);
 
 		$terms = array();
@@ -77,7 +77,10 @@ class tx_contentreplacer_repository_Term {
 	}
 }
 
-if (defined('TYPO3_MODE') && $GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/content_replacer/Classes/Repository/class.tx_contentreplacer_repository_term.php']) {
+if (defined(
+		'TYPO3_MODE'
+	) && $GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/content_replacer/Classes/Repository/class.tx_contentreplacer_repository_term.php']
+) {
 	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/content_replacer/Classes/Repository/class.tx_contentreplacer_repository_term.php']);
 }
 

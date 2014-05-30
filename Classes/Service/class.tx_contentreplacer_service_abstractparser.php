@@ -150,7 +150,10 @@ abstract class tx_contentreplacer_service_AbstractParser {
 	abstract public function replaceByCategory($category, array $terms, $content);
 }
 
-if (defined('TYPO3_MODE') && $GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/content_replacer/Classes/Service/class.tx_contentreplacer_service_AbstractParser.php']) {
+if (defined(
+		'TYPO3_MODE'
+	) && $GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/content_replacer/Classes/Service/class.tx_contentreplacer_service_AbstractParser.php']
+) {
 	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/content_replacer/Classes/Service/class.tx_contentreplacer_service_AbstractParser.php']);
 }
 

@@ -144,7 +144,7 @@ class tx_contentreplacer_controller_Main {
 
 	/**
 	 * Parses and replaces the content several times until the given parser cannot find
-	 * any more occurences or the maximum amount of possible passes is reached.
+	 * any more occurrences or the maximum amount of possible passes is reached.
 	 *
 	 * @param tx_contentreplacer_service_AbstractParser $parser
 	 * @param string $content
@@ -190,7 +190,10 @@ class tx_contentreplacer_controller_Main {
 	}
 }
 
-if (defined('TYPO3_MODE') && $GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/content_replacer/Classes/Controller/class.tx_contentreplacer_controller_main.php']) {
+if (defined(
+		'TYPO3_MODE'
+	) && $GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/content_replacer/Classes/Controller/class.tx_contentreplacer_controller_main.php']
+) {
 	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/content_replacer/Classes/Controller/class.tx_contentreplacer_controller_main.php']);
 }
 

@@ -19,12 +19,12 @@ CREATE TABLE tx_content_replacer_term (
 	t3ver_tstamp int(11) NOT NULL DEFAULT '0',
 	t3_origuid int(11) NOT NULL DEFAULT '0',
 
-    sys_language_uid int(11) NOT NULL DEFAULT '0',
+	sys_language_uid int(11) NOT NULL DEFAULT '0',
 	l10n_parent int(11) NOT NULL DEFAULT '0',
 	l10n_diffsource mediumblob NOT NULL,
 
 	deleted tinyint(1) NOT NULL DEFAULT '0',
-    hidden tinyint(1) NOT NULL DEFAULT '0',
+	hidden tinyint(1) NOT NULL DEFAULT '0',
 
 	starttime int(10) unsigned DEFAULT '0' NOT NULL,
 	endtime int(10) unsigned DEFAULT '0' NOT NULL,
@@ -64,7 +64,7 @@ CREATE TABLE tx_content_replacer_category (
 	t3_origuid int(11) NOT NULL DEFAULT '0',
 
 	deleted tinyint(1) NOT NULL DEFAULT '0',
-    hidden tinyint(1) NOT NULL DEFAULT '0',
+	hidden tinyint(1) NOT NULL DEFAULT '0',
 
 	category varchar(255) NOT NULL DEFAULT '',
 	description text,

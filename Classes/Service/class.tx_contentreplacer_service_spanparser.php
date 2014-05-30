@@ -57,9 +57,9 @@ class tx_contentreplacer_service_SpanParser extends tx_contentreplacer_service_A
 		$prefix = preg_quote($this->extensionConfiguration['prefix'], '/');
 		$pattern = '/' .
 			'<span' . // This expression includes any span nodes and parses
-				'(?=[^>]+' . // any attributes of the beginning start tag.
-					'(?=(class="([^"]*?' . $prefix . '[^"]+?)"))' .
-				')' . // Use only spans which start with the defined class prefix
+			'(?=[^>]+' . // any attributes of the beginning start tag.
+			'(?=(class="([^"]*?' . $prefix . '[^"]+?)"))' .
+			')' . // Use only spans which start with the defined class prefix
 			' (.*?)\1(.*?)>' . // and stop if the closing character is reached.
 			'(.*?)<\/span>' . // Finally we fetch the span content!
 			'/is';
@@ -124,9 +124,9 @@ class tx_contentreplacer_service_SpanParser extends tx_contentreplacer_service_A
 			$searchClass = preg_quote($this->extensionConfiguration['prefix'] . $category, '/');
 			$search[$termName] = '/' .
 				'<span ' . preg_quote($term['pre'], '/') .
-					'class="([^"]*?)' . $searchClass . '([^"]*?)"' .
-					preg_quote($term['post'], '/') . '>' .
-					'\s*?' . preg_quote($term['term'], '/') . '\s*?' .
+				'class="([^"]*?)' . $searchClass . '([^"]*?)"' .
+				preg_quote($term['post'], '/') . '>' .
+				'\s*?' . preg_quote($term['term'], '/') . '\s*?' .
 				'<\/span>' .
 				'/i';
 
@@ -146,7 +146,10 @@ class tx_contentreplacer_service_SpanParser extends tx_contentreplacer_service_A
 	}
 }
 
-if (defined('TYPO3_MODE') && $GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/content_replacer/Classes/Service/class.tx_contentreplacer_service_SpanParser.php']) {
+if (defined(
+		'TYPO3_MODE'
+	) && $GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/content_replacer/Classes/Service/class.tx_contentreplacer_service_SpanParser.php']
+) {
 	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/content_replacer/Classes/Service/class.tx_contentreplacer_service_SpanParser.php']);
 }
 
